@@ -8,12 +8,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { code, username, deviceUuid } = heartbeatSchema.parse(body);
 
-    const session = await prisma.attendanceSession.findUnique({
-      where: { code }
+    const sessionCode = code.trim().toUpperCase();
+    let session = await prisma.attendanceSession.findUnique({
+      where: { code: sessionCode }
     });
 
-    if (!session || !session.isActive) {
-      return NextResponse.json({ error: 'Invalid or inactive session' }, { status: 404 });
+    if (!session) {
+      session = await prisma.attendanceSession.create({
+        data: { code: sessionCode, isActive: true }
+      });
     }
 
     const rawIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
