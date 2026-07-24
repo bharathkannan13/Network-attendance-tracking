@@ -4,6 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ShieldCheck, Wifi, AlertTriangle, Link2Off, Sparkles, CheckCircle2 } from 'lucide-react';
 
 type PortalState = 'LOADING' | 'USERNAME_FORM' | 'WELCOME' | 'ACCESS_DENIED' | 'INVALID';
 
@@ -29,7 +30,6 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
 
     const validateCode = async () => {
       try {
-        // Perform Initial Network Scan
         const netRes = await fetch('/api/network/check');
         if (netRes.status === 403) {
           setState('ACCESS_DENIED');
@@ -39,7 +39,6 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
         const res = await fetch(`/api/sessions/validate?code=${code}`);
         if (res.ok) {
           if (savedUser) {
-            // Auto-connect returning user on page refresh
             sendHeartbeatPayload(savedUser, uuid);
           } else {
             setState('USERNAME_FORM');
@@ -109,81 +108,105 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#0a0e1a]">
+    <div className="aurora-bg min-h-screen flex items-center justify-center p-6 relative">
       {state === 'LOADING' && (
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-[#0087b3] border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-gray-400">Validating session...</p>
+        <div className="text-center space-y-4 relative z-10">
+          <div className="w-12 h-12 border-4 border-[#5B7FFF] border-t-transparent rounded-full animate-spin mx-auto shadow-[0_0_20px_rgba(91,127,255,0.4)]"></div>
+          <p className="text-slate-400 text-sm font-medium tracking-wide">Connecting to BK Ran Group Network...</p>
         </div>
       )}
 
       {state === 'USERNAME_FORM' && (
-        <Card className="w-full max-w-md bg-black/40 backdrop-blur-xl border-white/5 shadow-2xl">
-          <div className="text-center mb-8">
-            <h1 className="text-2xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-              RAMBoll Attendance
-            </h1>
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass-card rounded-[28px] p-8 space-y-6 shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/10">
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#5B7FFF]/20 to-[#7B61FF]/20 border border-[#5B7FFF]/30 flex items-center justify-center mx-auto mb-4">
+                <Wifi className="w-7 h-7 text-[#5B7FFF]" />
+              </div>
+              <h1 className="text-2xl font-bold tracking-tight text-white">
+                BK Ran Group Network
+              </h1>
+              <p className="text-xs text-slate-400">Enter your credentials to activate attendance connectivity</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="space-y-5 pt-2">
+              <Input
+                label="Employee Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="e.g. bhat or Sha"
+                required
+                autoFocus
+                className="bg-black/30 border-white/10 focus:border-[#5B7FFF] text-white"
+              />
+              <Button type="submit" className="w-full bg-gradient-primary py-3 rounded-xl font-semibold shadow-[0_10px_30px_rgba(91,127,255,0.3)] transition-all hover:scale-[1.02]" isLoading={isSubmitting}>
+                Connect to Network
+              </Button>
+            </form>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <Input
-              label="Enter Your Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="e.g. jdoe"
-              required
-              autoFocus
-            />
-            <Button type="submit" className="w-full" isLoading={isSubmitting}>
-              Enter
-            </Button>
-          </form>
-        </Card>
+        </div>
       )}
 
       {state === 'WELCOME' && (
-        <Card className="w-full max-w-lg text-center bg-black/40 border-emerald-500/20 shadow-[0_0_50px_rgba(16,185,129,0.1)]">
-          <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <div className="w-4 h-4 bg-emerald-500 rounded-full animate-pulse-green"></div>
-          </div>
-          <h1 className="text-2xl font-bold text-white mb-2">Welcome to RAMBoll Attendance Portal</h1>
-          <h2 className="text-xl text-emerald-400 mb-6">Welcome, {username}</h2>
-          
-          <div className="space-y-4 text-gray-300 bg-white/5 p-6 rounded-lg border border-white/5">
-            <p className="flex items-center justify-center gap-2 font-medium text-white">
-              <span>✅</span> Attendance Started Successfully
-            </p>
-            <p>You are connected to the authorized network.</p>
-            <p className="text-sm text-emerald-400 bg-emerald-500/10 py-2 px-4 rounded-md inline-block">
-              Please keep this page open while working.
-            </p>
-            <div className="pt-2">
-              <span className="text-xs text-gray-400 block mb-1">Network Security Key:</span>
-              <span className="text-xs font-mono font-bold text-[#00f0ff] bg-[#0087b3]/20 py-1.5 px-3 rounded border border-[#0087b3]/30 inline-block">
-                RAMBOLL-GUEST (guest.rambollgrp.com)
-              </span>
+        <div className="w-full max-w-lg relative z-10">
+          <div className="glass-card rounded-[28px] p-10 text-center space-y-6 shadow-[0_30px_80px_rgba(0,0,0,0.6)] border border-emerald-500/20">
+            <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto relative">
+              <div className="w-6 h-6 bg-emerald-500 rounded-full animate-pulse-green flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-black stroke-[3]" />
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <h1 className="text-2xl font-bold text-white tracking-tight">Welcome to BK Ran Group Network</h1>
+              <h2 className="text-xl font-semibold text-[#5B7FFF]">Hello, {username}</h2>
+            </div>
+
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Attendance Connectivity Active
+            </div>
+            
+            <div className="space-y-3 bg-white/[0.02] p-6 rounded-2xl border border-white/5 text-slate-300 text-sm">
+              <p className="flex items-center justify-center gap-2 font-medium text-white">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Connected Successfully
+              </p>
+              <p className="text-xs text-slate-400">Please keep this page open while working.</p>
+
+              <div className="pt-3 border-t border-white/5">
+                <span className="text-[11px] text-slate-400 block mb-1 font-mono uppercase tracking-wider">Network Security Key:</span>
+                <span className="text-xs font-mono font-bold text-[#38BDF8] bg-[#5B7FFF]/10 py-1.5 px-3 rounded-lg border border-[#5B7FFF]/20 inline-block">
+                  RAMBOLL-GUEST (guest.rambollgrp.com)
+                </span>
+              </div>
             </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {state === 'ACCESS_DENIED' && (
-        <Card className="w-full max-w-md text-center bg-black/40 border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.15)]">
-          <div className="text-5xl mb-4">⚠️</div>
-          <h1 className="text-2xl font-bold text-red-400 mb-2">Invalid Network Connection</h1>
-          <p className="text-gray-300 text-sm mb-4">You are connected to an unauthorized network (Airtel, Jio, or External Carrier).</p>
-          <div className="bg-white/5 p-4 rounded-lg border border-red-500/20 mt-4">
-            <p className="text-xs text-gray-400">Required Authorized Corporate Network:</p>
-            <p className="font-mono text-[#00f0ff] font-bold text-sm mt-1">RAMBOLL-GUEST (guest.rambollgrp.com)</p>
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass-card rounded-[28px] p-8 text-center space-y-5 border border-red-500/30 shadow-[0_30px_70px_rgba(255,95,109,0.15)]">
+            <div className="w-14 h-14 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center justify-center mx-auto text-red-400">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-bold text-red-400 tracking-tight">Invalid Network Connection</h1>
+            <p className="text-slate-300 text-sm">You are connected to an unauthorized network (Airtel, Jio, or External Carrier).</p>
+            <div className="bg-white/[0.03] p-4 rounded-xl border border-red-500/20 text-xs">
+              <p className="text-slate-400 mb-1">Required Authorized Corporate Network:</p>
+              <p className="font-mono text-[#38BDF8] font-bold text-sm">RAMBOLL-GUEST (guest.rambollgrp.com)</p>
+            </div>
           </div>
-        </Card>
+        </div>
       )}
 
       {state === 'INVALID' && (
-        <Card className="w-full max-w-md text-center bg-black/40">
-          <div className="text-5xl mb-6 opacity-50">🔗</div>
-          <h1 className="text-xl font-bold text-white mb-2">Invalid Link</h1>
-          <p className="text-gray-400">This attendance link is invalid or has expired.</p>
-        </Card>
+        <div className="w-full max-w-md relative z-10">
+          <div className="glass-card rounded-[28px] p-8 text-center space-y-4 border border-white/10">
+            <Link2Off className="w-12 h-12 text-slate-500 mx-auto" />
+            <h1 className="text-xl font-bold text-white">Invalid Link</h1>
+            <p className="text-slate-400 text-sm">This attendance link is invalid or has expired.</p>
+          </div>
+        </div>
       )}
     </div>
   );

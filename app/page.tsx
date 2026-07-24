@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ShieldCheck, Lock } from 'lucide-react';
 
 export default function AdminLogin() {
   const [username, setUsername] = useState('');
@@ -39,49 +40,53 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#0087b3] to-[#00f0ff] mb-4 shadow-[0_0_30px_rgba(0,240,255,0.3)]">
-            <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h1 className="text-2xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
-            RAMBOLL ATTENDANCE
-          </h1>
-          <p className="text-sm text-gray-400 mt-2">Administrator Login</p>
-        </div>
-
-        <form onSubmit={handleLogin} className="space-y-4">
-          <Input
-            label="Username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            placeholder="Enter admin username"
-          />
-          <Input
-            label="Password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            placeholder="••••••••"
-          />
+    <div className="aurora-bg min-h-screen flex items-center justify-center p-6 relative">
+      <div className="w-full max-w-md relative z-10">
+        <div className="glass-card rounded-[28px] p-8 space-y-6 shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/10">
           
-          {error && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-              {error}
+          <div className="text-center space-y-2">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#5B7FFF] to-[#7B61FF] flex items-center justify-center mx-auto mb-4 shadow-[0_0_30px_rgba(91,127,255,0.4)]">
+              <ShieldCheck className="w-8 h-8 text-white stroke-[2.5]" />
             </div>
-          )}
+            <h1 className="text-2xl font-bold tracking-tight text-white">
+              BK Ran Group
+            </h1>
+            <p className="text-xs text-slate-400 font-medium">BK Ran Attendance Connectivity — Admin Portal</p>
+          </div>
 
-          <Button type="submit" className="w-full mt-6" isLoading={isLoading}>
-            Sign In to Dashboard
-          </Button>
-        </form>
-      </Card>
+          <form onSubmit={handleLogin} className="space-y-4 pt-2">
+            <Input
+              label="Username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              placeholder="Enter admin username"
+              className="bg-black/30 border-white/10 text-white"
+            />
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              className="bg-black/30 border-white/10 text-white"
+            />
+            
+            {error && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-medium">
+                {error}
+              </div>
+            )}
+
+            <Button type="submit" className="w-full bg-gradient-primary py-3 rounded-xl font-semibold shadow-[0_10px_30px_rgba(91,127,255,0.3)] transition-all hover:scale-[1.02] flex items-center justify-center gap-2" isLoading={isLoading}>
+              <Lock className="w-4 h-4" /> Sign In to Executive Dashboard
+            </Button>
+          </form>
+
+        </div>
+      </div>
     </div>
   );
 }
