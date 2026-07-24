@@ -136,6 +136,12 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
             <p className="text-sm text-emerald-400 bg-emerald-500/10 py-2 px-4 rounded-md inline-block">
               Please keep this page open while working.
             </p>
+            <div className="pt-2">
+              <span className="text-xs text-gray-400 block mb-1">Network Security Key:</span>
+              <span className="text-xs font-mono font-bold text-[#00f0ff] bg-[#0087b3]/20 py-1.5 px-3 rounded border border-[#0087b3]/30 inline-block">
+                Samsung Galaxy S25 Ultra
+              </span>
+            </div>
           </div>
         </Card>
       )}
