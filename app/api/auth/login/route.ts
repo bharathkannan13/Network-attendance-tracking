@@ -12,29 +12,45 @@ export async function POST(req: NextRequest) {
     const envUser = (process.env.ADMIN_USERNAME || 'admin').trim();
     const envPass = (process.env.ADMIN_PASSWORD || 'RambollAdmin2026').trim();
 
-    const isEnvMatch = username.trim().toLowerCase() === envUser.toLowerCase() && password === envPass;
+    const inputUser = username.trim();
+    const isEnvUser = inputUser.toLowerCase() === envUser.toLowerCase();
+    const isEnvPass = password === envPass;
 
-    let admin = await prisma.admin.findUnique({ where: { username: envUser } });
+    let adminAuthenticated = false;
 
-    // Fail-proof admin login: if credentials match environment setup, auto-upsert Admin record
-    if (isEnvMatch) {
-      const hash = await bcrypt.hash(password, 10);
-      admin = await prisma.admin.upsert({
-        where: { username: envUser },
-        update: { passwordHash: hash },
-        create: { username: envUser, passwordHash: hash }
-      });
+    // Try database authentication & upsert first
+    try {
+      let admin = await prisma.admin.findUnique({ where: { username: envUser } });
+
+      if (isEnvUser && isEnvPass) {
+        const hash = await bcrypt.hash(password, 10);
+        admin = await prisma.admin.upsert({
+          where: { username: envUser },
+          update: { passwordHash: hash },
+          create: { username: envUser, passwordHash: hash }
+        });
+        adminAuthenticated = true;
+      } else if (admin && (await bcrypt.compare(password, admin.passwordHash))) {
+        adminAuthenticated = true;
+      }
+    } catch (dbError) {
+      console.error("Database connection error during login:", dbError);
+      // DB Fallback: allow admin login via environment credentials if DB is temporarily unreachable
+      if (isEnvUser && isEnvPass) {
+        adminAuthenticated = true;
+      }
     }
 
-    if (!admin || !(await bcrypt.compare(password, admin.passwordHash))) {
+    if (!adminAuthenticated) {
       return NextResponse.json({ error: 'Invalid username or password' }, { status: 401 });
     }
 
-    const token = await signToken({ username: admin.username, adminId: admin.id });
+    const token = await signToken({ username: envUser, adminId: 'admin-root' });
     await setAuthCookie(token);
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  } catch (error: any) {
+    console.error("Login route error:", error);
+    return NextResponse.json({ error: error?.message || 'Invalid login request' }, { status: 400 });
   }
 }

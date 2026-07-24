@@ -28,7 +28,8 @@ export default function AdminLogin() {
       if (res.ok) {
         router.push('/admin');
       } else {
-        setError('Invalid username or password');
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || 'Invalid username or password');
       }
     } catch (err) {
       setError('An error occurred during login');
