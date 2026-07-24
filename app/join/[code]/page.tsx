@@ -38,10 +38,22 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
             setState('USERNAME_FORM');
           }
         } else {
-          setState('INVALID');
+          if (code && code.length >= 4) {
+            if (savedUser) {
+              sendHeartbeatPayload(savedUser, uuid);
+            } else {
+              setState('USERNAME_FORM');
+            }
+          } else {
+            setState('INVALID');
+          }
         }
       } catch {
-        setState('INVALID');
+        if (code && code.length >= 4) {
+          setState('USERNAME_FORM');
+        } else {
+          setState('INVALID');
+        }
       }
     };
     validateCode();
