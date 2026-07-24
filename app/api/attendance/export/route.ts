@@ -38,9 +38,9 @@ export async function GET(req: NextRequest) {
     records.forEach(record => {
       worksheet.addRow({
         username: record.username,
-        date: record.date.toISOString().split('T')[0],
-        firstSeen: record.firstSeen.toLocaleTimeString(),
-        lastSeen: record.lastSeen.toLocaleTimeString(),
+        date: record.date.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata' }),
+        firstSeen: record.firstSeen.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
+        lastSeen: record.lastSeen.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
         totalHours: formatDuration(record.totalMinutes),
         ipAddress: record.ipAddress || 'N/A',
         status: record.status,

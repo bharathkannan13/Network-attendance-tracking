@@ -67,9 +67,48 @@ export default function AdminDashboard() {
     window.open('/api/attendance/export', '_blank');
   };
 
-  const totalOnline = records.filter(r => r.status === 'online').length;
+  const formatISTDate = (isoString: string) => {
+    if (!isoString) return '-';
+    try {
+      return new Date(isoString).toLocaleDateString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch {
+      return isoString.split('T')[0];
+    }
+  };
+
+  const formatISTTime = (isoString: string) => {
+    if (!isoString) return '-';
+    try {
+      return new Date(isoString).toLocaleTimeString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+    } catch {
+      return isoString;
+    }
+  };
+
+  const formatHours = (record: any) => {
+    if (record.totalMinutes !== undefined && record.totalMinutes !== null) {
+      const hrs = (record.totalMinutes / 60).toFixed(1);
+      return `${hrs} hrs`;
+    }
+    return record.totalHours || '0.0 hrs';
+  };
+
+  const totalOnline = records.filter(r => (r.status as string).toLowerCase() === 'online').length;
   const totalToday = records.length;
-  const avgHours = records.length > 0 ? "4.2h" : "0h"; // Mock computation
+  const avgHours = records.length > 0 
+    ? (records.reduce((acc, r: any) => acc + (r.totalMinutes || 0), 0) / records.length / 60).toFixed(1) + " hrs" 
+    : "0.0 hrs";
 
   const filteredRecords = records.filter(record => 
     record.username.toLowerCase().includes(search.toLowerCase()) &&
@@ -107,7 +146,7 @@ export default function AdminDashboard() {
                   type="text" 
                   readOnly 
                   value={generatedLink} 
-                  className="bg-transparent text-sm text-gray-300 w-full outline-none"
+                  className="bg-transparent text-sm text-gray-300 w-full outline-none font-mono"
                 />
                 <Button variant="secondary" onClick={handleCopyLink} className="!p-2">
                   Copy
@@ -138,17 +177,14 @@ export default function AdminDashboard() {
 
           <div className="space-y-3">
             <Button onClick={handleExport} variant="secondary" className="w-full">
-              Export to Excel
-            </Button>
-            <Button variant="danger" className="w-full">
-              Clear Demo Data
+              Export to Excel (IST)
             </Button>
           </div>
         </Card>
 
         <Card className="lg:col-span-2 flex flex-col h-[600px]">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium">Live Attendance</h3>
+            <h3 className="text-lg font-medium">Live Attendance (IST)</h3>
             <span className="flex items-center gap-2 text-sm text-gray-400">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-green" />
               Live Updates
@@ -160,9 +196,9 @@ export default function AdminDashboard() {
               <thead className="bg-white/5 sticky top-0 backdrop-blur-md">
                 <tr>
                   <th className="p-4 font-medium text-gray-300">Username</th>
-                  <th className="p-4 font-medium text-gray-300">Date</th>
-                  <th className="p-4 font-medium text-gray-300">First Seen</th>
-                  <th className="p-4 font-medium text-gray-300">Last Seen</th>
+                  <th className="p-4 font-medium text-gray-300">Date (IST)</th>
+                  <th className="p-4 font-medium text-gray-300">First Seen (IST)</th>
+                  <th className="p-4 font-medium text-gray-300">Last Seen (IST)</th>
                   <th className="p-4 font-medium text-gray-300">Total Hours</th>
                   <th className="p-4 font-medium text-gray-300">IP Address</th>
                   <th className="p-4 font-medium text-gray-300">Status</th>
@@ -170,17 +206,17 @@ export default function AdminDashboard() {
               </thead>
               <tbody className="divide-y divide-white/5">
                 {filteredRecords.length > 0 ? (
-                  filteredRecords.map((record) => (
+                  filteredRecords.map((record: any) => (
                     <tr key={record.id} className="hover:bg-white/5 transition-colors">
-                      <td className="p-4 text-white">{record.username}</td>
-                      <td className="p-4 text-gray-400">{record.date}</td>
-                      <td className="p-4 text-gray-400">{record.firstSeen}</td>
-                      <td className="p-4 text-gray-400">{record.lastSeen}</td>
-                      <td className="p-4 text-gray-400">{record.totalHours}</td>
-                      <td className="p-4 text-gray-500 font-mono text-xs">{record.ipAddress}</td>
+                      <td className="p-4 text-white font-medium">{record.username}</td>
+                      <td className="p-4 text-gray-400">{formatISTDate(record.date)}</td>
+                      <td className="p-4 text-gray-400">{formatISTTime(record.firstSeen)}</td>
+                      <td className="p-4 text-gray-400">{formatISTTime(record.lastSeen)}</td>
+                      <td className="p-4 text-gray-400">{formatHours(record)}</td>
+                      <td className="p-4 text-gray-500 font-mono text-xs">{record.ipAddress || '-'}</td>
                       <td className="p-4">
-                        <Badge status={record.status}>
-                          {record.status === 'online' ? 'Online' : 'Offline'}
+                        <Badge status={(record.status as string).toLowerCase() as any}>
+                          {(record.status as string).toLowerCase() === 'online' ? 'Online' : 'Offline'}
                         </Badge>
                       </td>
                     </tr>

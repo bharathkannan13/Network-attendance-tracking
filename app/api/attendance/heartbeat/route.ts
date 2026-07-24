@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     date.setHours(0, 0, 0, 0);
 
     let record = await prisma.attendanceRecord.findFirst({
-      where: { sessionId: session.id, username, date }
+      where: { sessionId: session.id, username }
     });
 
     if (record) {
@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
         data: {
           lastSeen: now,
           totalMinutes,
-          ipAddress,
-          userAgent,
+          ipAddress: ipAddress || record.ipAddress,
+          userAgent: userAgent || record.userAgent,
           status: 'ONLINE',
         }
       });
