@@ -271,10 +271,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* 2026 Visual Analytics & Network Widget Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         
         {/* Analytics Graph 1: Daily Attendance Trend (Smooth SVG Curve) */}
-        <div className="glass-card rounded-[28px] p-6 space-y-4 border border-white/10 lg:col-span-2">
+        <div className="glass-card rounded-[28px] p-6 space-y-4 border border-white/10 lg:col-span-2 xl:col-span-3">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
@@ -287,9 +287,9 @@ export default function AdminDashboard() {
             </span>
           </div>
 
-          {/* SVG Line Chart Visualization */}
-          <div className="h-44 w-full pt-4 relative flex items-end">
-            <svg className="w-full h-full overflow-visible" viewBox="0 0 500 120">
+          {/* SVG Line Chart Visualization for Ultrawide & 360 Curved Displays */}
+          <div className="h-48 w-full pt-4 relative flex items-end">
+            <svg className="w-full h-full overflow-visible" viewBox="0 0 1000 140" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#5B7FFF" stopOpacity="0.4" />
@@ -297,18 +297,18 @@ export default function AdminDashboard() {
                 </linearGradient>
               </defs>
               <path
-                d="M 0,90 Q 60,30 120,70 T 240,40 T 360,80 T 500,20 L 500,120 L 0,120 Z"
+                d="M 0,110 Q 120,40 250,80 T 500,40 T 750,90 T 1000,20 L 1000,140 L 0,140 Z"
                 fill="url(#chartGradient)"
               />
               <path
-                d="M 0,90 Q 60,30 120,70 T 240,40 T 360,80 T 500,20"
+                d="M 0,110 Q 120,40 250,80 T 500,40 T 750,90 T 1000,20"
                 fill="none"
                 stroke="#5B7FFF"
-                strokeWidth="3"
+                strokeWidth="3.5"
                 strokeLinecap="round"
               />
-              <circle cx="500" cy="20" r="5" fill="#38BDF8" className="animate-ping" />
-              <circle cx="500" cy="20" r="4" fill="#38BDF8" />
+              <circle cx="1000" cy="20" r="6" fill="#38BDF8" className="animate-ping" />
+              <circle cx="1000" cy="20" r="5" fill="#38BDF8" />
             </svg>
           </div>
 
@@ -316,12 +316,12 @@ export default function AdminDashboard() {
             <span>Week 1</span>
             <span>Week 2</span>
             <span>Week 3</span>
-            <span>Today (Active)</span>
+            <span>Today (Active Stream)</span>
           </div>
         </div>
 
         {/* Network Security Status Card Widget */}
-        <div className="glass-card rounded-[28px] p-6 space-y-5 border border-white/10 flex flex-col justify-between">
+        <div className="glass-card rounded-[28px] p-6 space-y-5 border border-white/10 flex flex-col justify-between lg:col-span-1 xl:col-span-1">
           <div>
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -361,10 +361,10 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Grid: Controls Sidebar & Live Attendance Table */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         
         {/* Controls Card: Link Generator & Export */}
-        <div className="lg:col-span-1 glass-card rounded-[28px] p-6 space-y-6 border border-white/10">
+        <div className="lg:col-span-1 xl:col-span-1 glass-card rounded-[28px] p-6 space-y-6 border border-white/10">
           
           {/* Session Link Generator */}
           <div className="space-y-4">
@@ -440,7 +440,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 2026 Floating Glass Attendance Table */}
-        <div className="lg:col-span-2 glass-card rounded-[28px] p-6 border border-white/10 flex flex-col h-[650px] shadow-2xl">
+        <div className="lg:col-span-2 xl:col-span-3 glass-card rounded-[28px] p-6 border border-white/10 flex flex-col h-[650px] shadow-2xl">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">

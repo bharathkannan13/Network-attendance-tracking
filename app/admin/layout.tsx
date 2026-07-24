@@ -53,8 +53,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen aurora-bg text-slate-100 flex flex-col font-sans">
       {/* 2026 Enterprise Top Navigation Bar */}
-      <header className="glass-card sticky top-0 z-50 rounded-none border-t-0 border-l-0 border-r-0 px-8 py-3.5 border-b border-white/10 backdrop-blur-2xl">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+      <header className="glass-card sticky top-0 z-50 rounded-none border-t-0 border-l-0 border-r-0 px-4 sm:px-6 md:px-8 lg:px-12 py-3.5 border-b border-white/10 backdrop-blur-2xl">
+        <div className="w-full max-w-[2400px] mx-auto flex items-center justify-between">
           
           {/* Logo & Branding */}
           <div className="flex items-center gap-4">
@@ -116,7 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </header>
 
       {/* Main Container with Sidebar + Dashboard Content */}
-      <div className="flex-1 max-w-[1600px] w-full mx-auto p-6 flex gap-6">
+      <div className="flex-1 max-w-[2400px] w-full mx-auto p-4 sm:p-6 lg:p-8 flex gap-6">
         
         {/* Floating Glass Sidebar */}
         <aside className="hidden lg:block w-64 shrink-0">
