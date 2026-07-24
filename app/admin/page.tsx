@@ -49,8 +49,10 @@ export default function AdminDashboard() {
       const res = await fetch('/api/sessions', { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
-        const origin = window.location.origin;
-        setGeneratedLink(`${origin}/join/${data.code}`);
+        const prodOrigin = typeof window !== 'undefined' && window.location.origin.includes('vercel.app')
+          ? 'https://network-attendance-tracking.vercel.app'
+          : window.location.origin;
+        setGeneratedLink(`${prodOrigin}/join/${data.code}`);
       }
     } catch (e) {
       console.error("Failed to generate link");

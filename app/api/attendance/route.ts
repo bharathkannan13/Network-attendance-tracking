@@ -9,6 +9,11 @@ export async function GET(req: NextRequest) {
     const dateParam = searchParams.get('date');
     const search = searchParams.get('search') || '';
 
+    if (searchParams.get('clear') === 'true') {
+      await prisma.attendanceRecord.deleteMany({});
+      return NextResponse.json([]);
+    }
+
     const where: any = {};
     
     if (dateParam) {
