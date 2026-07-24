@@ -38,6 +38,11 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const now = new Date();
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    const combinedUserAgent = deviceUuid ? `[UUID:${deviceUuid}] ${userAgent || ''}` : userAgent;
+
     // Deduplication matching criteria:
     // 1. Same sessionId AND same username (case-insensitive) OR
     // 2. Same sessionId AND same IP address (if IP is valid and not empty) OR
