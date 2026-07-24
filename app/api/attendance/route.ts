@@ -40,37 +40,64 @@ export async function GET(req: NextRequest) {
       return record;
     }));
 
-    // Deduplicate/Consolidate records strictly by IP address or username
-    const deduplicatedMap = new Map<string, any>();
+    // Physical Database-Level Deduplication & Consolidation
+    const ipGroupMap = new Map<string, typeof updatedRecords>();
     
     for (const rec of updatedRecords) {
-      const key = (rec.ipAddress && rec.ipAddress !== '127.0.0.1' && rec.ipAddress !== '::1') 
-        ? `IP_${rec.ipAddress.trim()}` 
+      const cleanIp = rec.ipAddress ? rec.ipAddress.split(',')[0].trim() : '';
+      const key = (cleanIp && cleanIp !== '127.0.0.1' && cleanIp !== '::1')
+        ? `IP_${cleanIp}`
         : `USER_${rec.username.trim().toLowerCase()}`;
 
-      if (!deduplicatedMap.has(key)) {
-        deduplicatedMap.set(key, { ...rec });
-      } else {
-        const existing = deduplicatedMap.get(key)!;
-        const firstSeen = rec.firstSeen < existing.firstSeen ? rec.firstSeen : existing.firstSeen;
-        const lastSeen = rec.lastSeen > existing.lastSeen ? rec.lastSeen : existing.lastSeen;
-        const status = (rec.status === 'ONLINE' || existing.status === 'ONLINE') ? 'ONLINE' : 'OFFLINE';
-        const totalMinutes = Math.floor((lastSeen.getTime() - firstSeen.getTime()) / 60000);
+      if (!ipGroupMap.has(key)) {
+        ipGroupMap.set(key, []);
+      }
+      ipGroupMap.get(key)!.push(rec);
+    }
 
-        deduplicatedMap.set(key, {
-          ...existing,
-          username: rec.lastSeen >= existing.lastSeen ? rec.username : existing.username,
-          firstSeen,
-          lastSeen,
-          totalMinutes,
-          status,
+    const consolidatedRecords: any[] = [];
+
+    for (const [key, group] of ipGroupMap.entries()) {
+      if (group.length === 1) {
+        consolidatedRecords.push(group[0]);
+      } else {
+        // Sort to find earliest firstSeen and latest lastSeen
+        group.sort((a, b) => new Date(a.firstSeen).getTime() - new Date(b.firstSeen).getTime());
+        const primary = group[0];
+        
+        const latestRec = [...group].sort((a, b) => new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime())[0];
+        
+        const firstSeen = new Date(primary.firstSeen);
+        const lastSeen = new Date(latestRec.lastSeen);
+        const totalMinutes = Math.floor((lastSeen.getTime() - firstSeen.getTime()) / 60000);
+        const isOnline = group.some(r => r.status === 'ONLINE');
+
+        // Update primary record in database
+        const updatedPrimary = await prisma.attendanceRecord.update({
+          where: { id: primary.id },
+          data: {
+            username: latestRec.username,
+            firstSeen,
+            lastSeen,
+            totalMinutes,
+            status: isOnline ? 'ONLINE' : 'OFFLINE',
+          },
+          include: { session: true }
         });
+
+        // Permanently delete extra duplicate row IDs from PostgreSQL database
+        const duplicateIds = group.filter(r => r.id !== primary.id).map(r => r.id);
+        if (duplicateIds.length > 0) {
+          await prisma.attendanceRecord.deleteMany({
+            where: { id: { in: duplicateIds } }
+          });
+        }
+
+        consolidatedRecords.push(updatedPrimary);
       }
     }
 
-    const deduplicatedList = Array.from(deduplicatedMap.values());
-
-    const formattedRecords = deduplicatedList.map(record => {
+    const formattedRecords = consolidatedRecords.map(record => {
       const firstSeenIST = record.firstSeen.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
       const lastSeenIST = record.lastSeen.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
       const dateIST = record.date.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric' });
