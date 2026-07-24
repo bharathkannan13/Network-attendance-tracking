@@ -157,7 +157,7 @@ export default function AdminDashboard() {
             <div className="mt-4 p-3 bg-[#0087b3]/15 border border-[#0087b3]/40 rounded-lg flex items-center justify-between">
               <span className="text-xs text-gray-300 font-medium">Authorized Network Key:</span>
               <span className="text-xs font-mono font-bold text-[#00f0ff] bg-[#0087b3]/20 px-2.5 py-1 rounded border border-[#0087b3]/30">
-                Samsung Galaxy S25 Ultra
+                RAMBOLL-GUEST (guest.rambollgrp.com)
               </span>
             </div>
           </div>

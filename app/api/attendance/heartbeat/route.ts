@@ -22,8 +22,8 @@ export async function POST(req: NextRequest) {
     const rawIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
     const ipAddress = rawIp ? rawIp.split(',')[0].trim() : null;
     const userAgent = req.headers.get('user-agent') || null;
-    // Strict Network Validation against authorized Samsung S25 Ultra network prefixes
-    const allowedPrefixes = (process.env.ALLOWED_IP_PREFIX || '1.6.224.,2401:4900:ca77:,10.79.130.,127.0.0.1,::1').split(',');
+    // Strict Network Validation against authorized RAMBOLL-GUEST network prefixes
+    const allowedPrefixes = (process.env.ALLOWED_IP_PREFIX || '172.16.50.,1.6.224.,2401:4900:ca77:,10.79.130.,127.0.0.1,::1').split(',');
     
     if (ipAddress) {
       const isAuthorizedNetwork = allowedPrefixes.some(prefix => 

@@ -139,7 +139,7 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
             <div className="pt-2">
               <span className="text-xs text-gray-400 block mb-1">Network Security Key:</span>
               <span className="text-xs font-mono font-bold text-[#00f0ff] bg-[#0087b3]/20 py-1.5 px-3 rounded border border-[#0087b3]/30 inline-block">
-                Samsung Galaxy S25 Ultra
+                RAMBOLL-GUEST (guest.rambollgrp.com)
               </span>
             </div>
           </div>
