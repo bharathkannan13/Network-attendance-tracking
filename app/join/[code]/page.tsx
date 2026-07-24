@@ -12,6 +12,7 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
   const [state, setState] = useState<PortalState>('LOADING');
   const [username, setUsername] = useState('');
   const [deviceUuid, setDeviceUuid] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     let uuid = localStorage.getItem('ramboll_device_uuid');
