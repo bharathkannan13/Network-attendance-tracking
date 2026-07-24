@@ -11,14 +11,31 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
   const { code } = use(params);
   const [state, setState] = useState<PortalState>('LOADING');
   const [username, setUsername] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deviceUuid, setDeviceUuid] = useState<string>('');
 
   useEffect(() => {
+    let uuid = localStorage.getItem('ramboll_device_uuid');
+    if (!uuid) {
+      uuid = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Math.random().toString(36).substring(2, 11);
+      localStorage.setItem('ramboll_device_uuid', uuid);
+    }
+    setDeviceUuid(uuid);
+
+    const savedUser = localStorage.getItem('ramboll_employee_username');
+    if (savedUser) {
+      setUsername(savedUser);
+    }
+
     const validateCode = async () => {
       try {
         const res = await fetch(`/api/sessions/validate?code=${code}`);
         if (res.ok) {
-          setState('USERNAME_FORM');
+          if (savedUser) {
+            // Auto-connect returning user on page refresh
+            sendHeartbeatPayload(savedUser, uuid);
+          } else {
+            setState('USERNAME_FORM');
+          }
         } else {
           setState('INVALID');
         }
@@ -29,41 +46,13 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
     validateCode();
   }, [code]);
 
-  useEffect(() => {
-    if (state !== 'WELCOME') return;
-
-    const sendHeartbeat = async () => {
-      try {
-        const res = await fetch('/api/attendance/heartbeat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, username }),
-        });
-        
-        if (!res.ok) {
-          setState('ACCESS_DENIED');
-        }
-      } catch {
-        setState('ACCESS_DENIED');
-      }
-    };
-
-    const interval = setInterval(sendHeartbeat, 30000); // 30 seconds
-    return () => clearInterval(interval);
-  }, [state, code, username]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim()) return;
-    
-    setIsSubmitting(true);
+  const sendHeartbeatPayload = async (uname: string, uuidStr: string) => {
     try {
       const res = await fetch('/api/attendance/heartbeat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, username }),
+        body: JSON.stringify({ code, username: uname, deviceUuid: uuidStr }),
       });
-      
       if (res.ok) {
         setState('WELCOME');
       } else {
@@ -71,6 +60,29 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
       }
     } catch {
       setState('ACCESS_DENIED');
+    }
+  };
+
+  useEffect(() => {
+    if (state !== 'WELCOME' || !username) return;
+
+    const interval = setInterval(() => {
+      sendHeartbeatPayload(username, deviceUuid);
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [state, code, username, deviceUuid]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim()) return;
+    
+    const trimmedUser = username.trim();
+    localStorage.setItem('ramboll_employee_username', trimmedUser);
+    
+    setIsSubmitting(true);
+    try {
+      await sendHeartbeatPayload(trimmedUser, deviceUuid);
     } finally {
       setIsSubmitting(false);
     }

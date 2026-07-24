@@ -6,7 +6,7 @@ import { calculateTotalMinutes } from '@/lib/utils';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { code, username } = heartbeatSchema.parse(body);
+    const { code, username, deviceUuid } = heartbeatSchema.parse(body);
 
     const session = await prisma.attendanceSession.findUnique({
       where: { code }
@@ -16,14 +16,37 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid or inactive session' }, { status: 404 });
     }
 
-    const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || null;
+    const rawIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
+    const ipAddress = rawIp ? rawIp.split(',')[0].trim() : null;
     const userAgent = req.headers.get('user-agent') || null;
+    const combinedUserAgent = deviceUuid ? `[UUID:${deviceUuid}] ${userAgent || ''}` : userAgent;
+
     const now = new Date();
     const date = new Date();
     date.setHours(0, 0, 0, 0);
 
+    // Deduplication matching criteria:
+    // 1. Same sessionId AND same username (case-insensitive) OR
+    // 2. Same sessionId AND same IP address (if IP is valid and not empty) OR
+    // 3. Same sessionId AND same deviceUuid (stored in userAgent)
+    const matchConditions: any[] = [
+      { username: { equals: username.trim(), mode: 'insensitive' } }
+    ];
+
+    if (ipAddress && ipAddress !== '127.0.0.1' && ipAddress !== '::1') {
+      matchConditions.push({ ipAddress });
+    }
+
+    if (deviceUuid) {
+      matchConditions.push({ userAgent: { contains: `[UUID:${deviceUuid}]` } });
+    }
+
     let record = await prisma.attendanceRecord.findFirst({
-      where: { sessionId: session.id, username }
+      where: {
+        sessionId: session.id,
+        OR: matchConditions,
+      },
+      orderBy: { firstSeen: 'asc' }
     });
 
     if (record) {
@@ -31,10 +54,11 @@ export async function POST(req: NextRequest) {
       record = await prisma.attendanceRecord.update({
         where: { id: record.id },
         data: {
+          username: username.trim(), // update to latest username spelling if corrected
           lastSeen: now,
           totalMinutes,
           ipAddress: ipAddress || record.ipAddress,
-          userAgent: userAgent || record.userAgent,
+          userAgent: combinedUserAgent || record.userAgent,
           status: 'ONLINE',
         }
       });
@@ -42,12 +66,12 @@ export async function POST(req: NextRequest) {
       record = await prisma.attendanceRecord.create({
         data: {
           sessionId: session.id,
-          username,
+          username: username.trim(),
           date,
           firstSeen: now,
           lastSeen: now,
           ipAddress,
-          userAgent,
+          userAgent: combinedUserAgent,
           status: 'ONLINE',
         }
       });

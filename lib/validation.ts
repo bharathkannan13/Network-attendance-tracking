@@ -12,6 +12,7 @@ export const createSessionSchema = z.object({
 export const heartbeatSchema = z.object({
   code: z.string().length(8, "Session code must be 8 characters"),
   username: z.string().min(2, "Username must be at least 2 characters"),
+  deviceUuid: z.string().optional(),
 });
 
 export const attendanceQuerySchema = z.object({
