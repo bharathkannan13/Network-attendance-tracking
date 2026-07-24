@@ -43,17 +43,12 @@ export async function POST(req: NextRequest) {
     date.setHours(0, 0, 0, 0);
     const combinedUserAgent = deviceUuid ? `[UUID:${deviceUuid}] ${userAgent || ''}` : userAgent;
 
-    // Deduplication matching criteria:
+    // Deduplication matching criteria per employee:
     // 1. Same sessionId AND same username (case-insensitive) OR
-    // 2. Same sessionId AND same IP address (if IP is valid and not empty) OR
-    // 3. Same sessionId AND same deviceUuid (stored in userAgent)
+    // 2. Same sessionId AND same deviceUuid (stored in userAgent)
     const matchConditions: any[] = [
       { username: { equals: username.trim(), mode: 'insensitive' } }
     ];
-
-    if (ipAddress && ipAddress !== '127.0.0.1' && ipAddress !== '::1') {
-      matchConditions.push({ ipAddress });
-    }
 
     if (deviceUuid) {
       matchConditions.push({ userAgent: { contains: `[UUID:${deviceUuid}]` } });

@@ -45,28 +45,25 @@ export async function GET(req: NextRequest) {
       return record;
     }));
 
-    // Physical Database-Level Deduplication & Consolidation
-    const ipGroupMap = new Map<string, typeof updatedRecords>();
+    // Database Consolidation per employee username per day
+    const userGroupMap = new Map<string, typeof updatedRecords>();
     
     for (const rec of updatedRecords) {
-      const cleanIp = rec.ipAddress ? rec.ipAddress.split(',')[0].trim() : '';
-      const key = (cleanIp && cleanIp !== '127.0.0.1' && cleanIp !== '::1')
-        ? `IP_${cleanIp}`
-        : `USER_${rec.username.trim().toLowerCase()}`;
+      const key = `${rec.date.toISOString().split('T')[0]}_USER_${rec.username.trim().toLowerCase()}`;
 
-      if (!ipGroupMap.has(key)) {
-        ipGroupMap.set(key, []);
+      if (!userGroupMap.has(key)) {
+        userGroupMap.set(key, []);
       }
-      ipGroupMap.get(key)!.push(rec);
+      userGroupMap.get(key)!.push(rec);
     }
 
     const consolidatedRecords: any[] = [];
 
-    for (const [key, group] of ipGroupMap.entries()) {
+    for (const [key, group] of userGroupMap.entries()) {
       if (group.length === 1) {
         consolidatedRecords.push(group[0]);
       } else {
-        // Sort to find earliest firstSeen and latest lastSeen
+        // Sort to find earliest firstSeen and latest lastSeen for this username
         group.sort((a, b) => new Date(a.firstSeen).getTime() - new Date(b.firstSeen).getTime());
         const primary = group[0];
         
@@ -90,7 +87,7 @@ export async function GET(req: NextRequest) {
           include: { session: true }
         });
 
-        // Permanently delete extra duplicate row IDs from PostgreSQL database
+        // Delete duplicate records for the same username
         const duplicateIds = group.filter(r => r.id !== primary.id).map(r => r.id);
         if (duplicateIds.length > 0) {
           await prisma.attendanceRecord.deleteMany({
