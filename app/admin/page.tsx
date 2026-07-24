@@ -66,7 +66,10 @@ export default function AdminDashboard() {
   };
 
   const handleExport = () => {
-    window.open('/api/attendance/export', '_blank');
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (dateFilter) params.append('date', dateFilter);
+    window.open(`/api/attendance/export?${params.toString()}`, '_blank');
   };
 
   const formatISTDate = (isoString: string) => {

@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
     await requireAdmin();
     const { searchParams } = new URL(req.url);
     const dateParam = searchParams.get('date');
+    const searchParam = searchParams.get('search') || searchParams.get('username') || '';
     
     const where: any = {};
     if (dateParam) {
@@ -17,9 +18,13 @@ export async function GET(req: NextRequest) {
       where.date = date;
     }
 
+    if (searchParam) {
+      where.username = { contains: searchParam, mode: 'insensitive' };
+    }
+
     const records = await prisma.attendanceRecord.findMany({
       where,
-      orderBy: { username: 'asc' },
+      orderBy: searchParam ? [{ date: 'desc' }, { firstSeen: 'asc' }] : [{ username: 'asc' }, { date: 'desc' }],
     });
 
     const workbook = new ExcelJS.Workbook();
