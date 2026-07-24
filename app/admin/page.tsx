@@ -115,20 +115,41 @@ export default function AdminDashboard() {
     (dateFilter === '' || record.date === dateFilter)
   );
 
+  const handleClearRecords = async () => {
+    if (!confirm('Are you sure you want to clear all attendance records?')) return;
+    try {
+      const res = await fetch('/api/attendance', { method: 'DELETE' });
+      if (res.ok) {
+        setRecords([]);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="flex flex-col gap-2">
-          <span className="text-gray-400 text-sm">Total Online</span>
-          <span className="text-3xl font-bold text-emerald-400">{totalOnline}</span>
+        <Card className="flex items-center space-x-4">
+          <div className="p-3 bg-emerald-500/10 text-emerald-500 rounded-lg">🟢</div>
+          <div>
+            <p className="text-sm text-gray-400">Total Online</p>
+            <p className="text-2xl font-bold text-emerald-400">{totalOnline}</p>
+          </div>
         </Card>
-        <Card className="flex flex-col gap-2">
-          <span className="text-gray-400 text-sm">Total Today</span>
-          <span className="text-3xl font-bold text-white">{totalToday}</span>
+        <Card className="flex items-center space-x-4">
+          <div className="p-3 bg-[#0087b3]/10 text-[#00f0ff] rounded-lg">👥</div>
+          <div>
+            <p className="text-sm text-gray-400">Total Today</p>
+            <p className="text-2xl font-bold text-white">{totalToday}</p>
+          </div>
         </Card>
-        <Card className="flex flex-col gap-2">
-          <span className="text-gray-400 text-sm">Avg Hours Today</span>
-          <span className="text-3xl font-bold text-[#00f0ff]">{avgHours}</span>
+        <Card className="flex items-center space-x-4">
+          <div className="p-3 bg-[#0087b3]/10 text-[#00f0ff] rounded-lg">⏱️</div>
+          <div>
+            <p className="text-sm text-gray-400">Avg Hours Today</p>
+            <p className="text-2xl font-bold text-[#00f0ff]">{avgHours}</p>
+          </div>
         </Card>
       </div>
 
@@ -185,6 +206,9 @@ export default function AdminDashboard() {
           <div className="space-y-3">
             <Button onClick={handleExport} variant="secondary" className="w-full">
               Export to Excel (IST)
+            </Button>
+            <Button onClick={handleClearRecords} className="w-full !bg-red-600/20 !text-red-400 hover:!bg-red-600/30 border border-red-500/30">
+              Clear All Records
             </Button>
           </div>
         </Card>

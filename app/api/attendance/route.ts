@@ -40,13 +40,13 @@ export async function GET(req: NextRequest) {
       return record;
     }));
 
-    // Deduplicate/Consolidate records by IP address or username per day
+    // Deduplicate/Consolidate records strictly by IP address or username
     const deduplicatedMap = new Map<string, any>();
     
     for (const rec of updatedRecords) {
       const key = (rec.ipAddress && rec.ipAddress !== '127.0.0.1' && rec.ipAddress !== '::1') 
-        ? `${rec.date.toISOString().split('T')[0]}_IP_${rec.ipAddress}` 
-        : `${rec.date.toISOString().split('T')[0]}_USER_${rec.username.toLowerCase()}`;
+        ? `IP_${rec.ipAddress.trim()}` 
+        : `USER_${rec.username.trim().toLowerCase()}`;
 
       if (!deduplicatedMap.has(key)) {
         deduplicatedMap.set(key, { ...rec });
@@ -86,6 +86,16 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json(formattedRecords);
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    await requireAdmin();
+    await prisma.attendanceRecord.deleteMany({});
+    return NextResponse.json({ success: true, message: 'All attendance records cleared' });
   } catch (error) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
