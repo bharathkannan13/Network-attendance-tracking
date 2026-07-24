@@ -22,11 +22,21 @@ export async function POST(req: NextRequest) {
     const rawIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
     const ipAddress = rawIp ? rawIp.split(',')[0].trim() : null;
     const userAgent = req.headers.get('user-agent') || null;
-    const combinedUserAgent = deviceUuid ? `[UUID:${deviceUuid}] ${userAgent || ''}` : userAgent;
+    // Strict Network Validation against authorized Samsung S25 Ultra network prefixes
+    const allowedPrefixes = (process.env.ALLOWED_IP_PREFIX || '1.6.224.,2401:4900:ca77:,10.79.130.,127.0.0.1,::1').split(',');
+    
+    if (ipAddress) {
+      const isAuthorizedNetwork = allowedPrefixes.some(prefix => 
+        prefix.trim() && ipAddress.startsWith(prefix.trim())
+      );
 
-    const now = new Date();
-    const date = new Date();
-    date.setHours(0, 0, 0, 0);
+      if (process.env.STRICT_NETWORK_CHECK === 'true' && !isAuthorizedNetwork) {
+        return NextResponse.json({
+          error: 'Access Denied: Please connect to the authorized Galaxy S25 Ultra 7A56 network.',
+          authorizedSSID: process.env.AUTHORIZED_SSID || 'Galaxy S25 Ultra 7A56'
+        }, { status: 403 });
+      }
+    }
 
     // Deduplication matching criteria:
     // 1. Same sessionId AND same username (case-insensitive) OR
