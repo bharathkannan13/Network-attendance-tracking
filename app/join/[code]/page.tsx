@@ -29,6 +29,13 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
 
     const validateCode = async () => {
       try {
+        // Perform Initial Network Scan
+        const netRes = await fetch('/api/network/check');
+        if (netRes.status === 403) {
+          setState('ACCESS_DENIED');
+          return;
+        }
+
         const res = await fetch(`/api/sessions/validate?code=${code}`);
         if (res.ok) {
           if (savedUser) {
@@ -160,13 +167,13 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
       )}
 
       {state === 'ACCESS_DENIED' && (
-        <Card className="w-full max-w-md text-center bg-black/40 border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.1)]">
-          <div className="text-5xl mb-6">⚠️</div>
-          <h1 className="text-2xl font-bold text-red-400 mb-4">Access Denied</h1>
-          <p className="text-gray-300 mb-4">Please connect to the authorized RAMBoll network.</p>
-          <div className="bg-white/5 p-4 rounded-lg border border-white/10 mt-6">
-            <p className="text-sm text-gray-400">Current authorized SSID:</p>
-            <p className="font-mono text-white mt-1">Samsung Galaxy S25 Ultra</p>
+        <Card className="w-full max-w-md text-center bg-black/40 border-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.15)]">
+          <div className="text-5xl mb-4">⚠️</div>
+          <h1 className="text-2xl font-bold text-red-400 mb-2">Invalid Network Connection</h1>
+          <p className="text-gray-300 text-sm mb-4">You are connected to an unauthorized network (Airtel, Jio, or External Carrier).</p>
+          <div className="bg-white/5 p-4 rounded-lg border border-red-500/20 mt-4">
+            <p className="text-xs text-gray-400">Required Authorized Corporate Network:</p>
+            <p className="font-mono text-[#00f0ff] font-bold text-sm mt-1">RAMBOLL-GUEST (guest.rambollgrp.com)</p>
           </div>
         </Card>
       )}

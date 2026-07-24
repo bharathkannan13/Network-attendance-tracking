@@ -30,10 +30,12 @@ export async function POST(req: NextRequest) {
         prefix.trim() && ipAddress.startsWith(prefix.trim())
       );
 
-      if (process.env.STRICT_NETWORK_CHECK === 'true' && !isAuthorizedNetwork) {
+      const strictCheck = process.env.STRICT_NETWORK_CHECK !== 'false';
+
+      if (strictCheck && !isAuthorizedNetwork) {
         return NextResponse.json({
-          error: 'Access Denied: Please connect to the authorized Galaxy S25 Ultra 7A56 network.',
-          authorizedSSID: process.env.AUTHORIZED_SSID || 'Galaxy S25 Ultra 7A56'
+          error: 'Invalid Network: Please connect to the authorized RAMBOLL group network.',
+          authorizedSSID: process.env.AUTHORIZED_SSID || 'RAMBOLL-GUEST (guest.rambollgrp.com)'
         }, { status: 403 });
       }
     }
