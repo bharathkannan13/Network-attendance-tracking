@@ -9,21 +9,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    // Simple client-side auth check
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/auth/login');
-        if (!res.ok) {
-          router.push('/');
-        } else {
-          setIsChecking(false);
-        }
-      } catch {
-        router.push('/');
-      }
-    };
-    checkAuth();
-  }, [router]);
+    setIsChecking(false);
+  }, []);
 
   if (isChecking) {
     return (
@@ -45,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               ADMIN PORTAL
             </span>
           </div>
-          <Button variant="ghost" onClick={() => router.push('/')} className="text-sm">
+          <Button variant="ghost" onClick={async () => { await fetch('/api/auth/logout', { method: 'POST' }); router.push('/'); }} className="text-sm">
             Sign Out
           </Button>
         </div>
