@@ -209,10 +209,10 @@ export default function AdminDashboard() {
                   filteredRecords.map((record: any) => (
                     <tr key={record.id} className="hover:bg-white/5 transition-colors">
                       <td className="p-4 text-white font-medium">{record.username}</td>
-                      <td className="p-4 text-gray-400">{formatISTDate(record.date)}</td>
-                      <td className="p-4 text-gray-400">{formatISTTime(record.firstSeen)}</td>
-                      <td className="p-4 text-gray-400">{formatISTTime(record.lastSeen)}</td>
-                      <td className="p-4 text-gray-400">{formatHours(record)}</td>
+                      <td className="p-4 text-gray-400">{record.dateFormatted || formatISTDate(record.date)}</td>
+                      <td className="p-4 text-gray-400">{record.firstSeenFormatted || formatISTTime(record.firstSeen)}</td>
+                      <td className="p-4 text-gray-400">{record.lastSeenFormatted || formatISTTime(record.lastSeen)}</td>
+                      <td className="p-4 text-gray-400">{record.totalHoursFormatted || formatHours(record)}</td>
                       <td className="p-4 text-gray-500 font-mono text-xs">{record.ipAddress || '-'}</td>
                       <td className="p-4">
                         <Badge status={(record.status as string).toLowerCase() as any}>

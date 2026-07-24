@@ -37,10 +37,22 @@ export async function GET(req: NextRequest) {
           include: { session: true }
         });
       }
-      return record;
-    }));
+    const formattedRecords = updatedRecords.map(record => {
+      const firstSeenIST = record.firstSeen.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      const lastSeenIST = record.lastSeen.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+      const dateIST = record.date.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric' });
+      const totalHours = (record.totalMinutes / 60).toFixed(1) + " hrs";
 
-    return NextResponse.json(updatedRecords);
+      return {
+        ...record,
+        dateFormatted: dateIST,
+        firstSeenFormatted: firstSeenIST,
+        lastSeenFormatted: lastSeenIST,
+        totalHoursFormatted: totalHours,
+      };
+    });
+
+    return NextResponse.json(formattedRecords);
   } catch (error) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
