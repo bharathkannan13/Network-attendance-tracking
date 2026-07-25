@@ -1,19 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
   ShieldCheck, 
   LayoutDashboard, 
   BarChart3, 
   Download, 
-  Settings2, 
-  Search, 
   Bell, 
   LogOut, 
   Menu,
   X,
-  Wifi
+  Wifi,
+  UserCheck,
+  Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -22,11 +22,29 @@ interface VersionInfo {
   status?: string;
 }
 
+interface Notification {
+  id: string;
+  username: string;
+  message: string;
+  time: string;
+  read: boolean;
+}
+
+interface AttendanceRecord {
+  id: string;
+  username: string;
+  status: string;
+  firstSeen: string;
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [versionInfo, setVersionInfo] = useState<VersionInfo | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [knownUsers, setKnownUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetch('/api/version')
@@ -35,44 +53,83 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .catch((err) => console.error('Failed to fetch version info', err));
   }, []);
 
+  // Poll attendance data to detect new user connections
+  const checkForNewConnections = useCallback(async () => {
+    try {
+      const res = await fetch('/api/attendance');
+      if (!res.ok) return;
+      const records: AttendanceRecord[] = await res.json();
+      const onlineUsers = records.filter(r => r.status?.toLowerCase() === 'online');
+      
+      onlineUsers.forEach(record => {
+        if (!knownUsers.has(record.username)) {
+          const newNotif: Notification = {
+            id: `${record.username}-${Date.now()}`,
+            username: record.username,
+            message: `${record.username} connected to the network`,
+            time: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true }),
+            read: false,
+          };
+          setNotifications(prev => [newNotif, ...prev].slice(0, 20));
+        }
+      });
+
+      setKnownUsers(new Set(onlineUsers.map(r => r.username)));
+    } catch (e) { /* silent */ }
+  }, [knownUsers]);
+
+  useEffect(() => {
+    checkForNewConnections();
+    const interval = setInterval(checkForNewConnections, 5000);
+    return () => clearInterval(interval);
+  }, [checkForNewConnections]);
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
     { name: 'Export', href: '/admin/export', icon: Download },
-    { name: 'Settings', href: '/admin/settings', icon: Settings2 },
   ];
 
   return (
-    <div className="min-h-screen text-neutral-100 flex overflow-hidden" style={{ backgroundColor: 'var(--bg, #060913)' }}>
+    <div className="min-h-screen text-slate-100 flex overflow-hidden" style={{ backgroundColor: '#060913' }}>
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 z-40 lg:hidden" 
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden backdrop-blur-sm" 
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 bg-neutral-900/80 backdrop-blur-xl border-r border-white/10 transform transition-transform duration-300 ease-in-out flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:flex-shrink-0`}>
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 flex flex-col transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 lg:static lg:flex-shrink-0`}
+        style={{ backgroundColor: '#0a0f1e', borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+        
         {/* Logo Area */}
-        <div className="h-16 flex items-center px-6 border-b border-white/10">
-          <div className="w-8 h-8 rounded bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center mr-3 shadow-lg shadow-indigo-500/20">
+        <div className="h-16 flex items-center px-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3 shadow-lg shadow-indigo-500/25">
             <ShieldCheck className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="font-semibold text-sm text-white tracking-tight">BK Ran Group</div>
-            <div className="text-[10px] font-bold text-indigo-400 tracking-wider">ENTERPRISE</div>
+            <div className="font-bold text-sm text-white tracking-tight">BK Ran Group</div>
+            <div className="text-[9px] font-bold text-indigo-400 tracking-[0.2em] uppercase">Enterprise</div>
           </div>
           <button 
             onClick={() => setIsSidebarOpen(false)}
-            className="ml-auto p-1 lg:hidden text-neutral-400 hover:text-white"
+            className="ml-auto p-1.5 lg:hidden text-slate-400 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 py-5 px-3 space-y-1 overflow-y-auto">
+          <p className="px-3 mb-3 text-[10px] font-bold text-slate-500 uppercase tracking-[0.15em]">Navigation</p>
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
@@ -80,26 +137,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <a
                 key={item.name}
                 href={item.href}
-                className={`flex items-center px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                   isActive 
-                    ? 'bg-indigo-500/10 text-indigo-400' 
-                    : 'text-neutral-400 hover:bg-white/5 hover:text-neutral-200'
+                    ? 'text-white shadow-md' 
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/[0.04]'
                 }`}
+                style={isActive ? { background: 'linear-gradient(135deg, rgba(99,102,241,0.2) 0%, rgba(139,92,246,0.15) 100%)', border: '1px solid rgba(99,102,241,0.2)' } : {}}
               >
-                <Icon className={`w-5 h-5 mr-3 ${isActive ? 'text-indigo-400' : 'text-neutral-500'}`} />
+                <Icon className={`w-[18px] h-[18px] mr-3 ${isActive ? 'text-indigo-400' : 'text-slate-500'}`} />
                 {item.name}
               </a>
             );
           })}
         </nav>
 
-        {/* Bottom Status */}
-        <div className="p-4 border-t border-white/10 bg-black/20">
-          <div className="flex items-center px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-            <Wifi className="w-4 h-4 text-emerald-400 mr-2" />
+        {/* Bottom Network Status */}
+        <div className="p-4" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center px-3 py-2.5 rounded-xl" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}>
+            <Wifi className="w-4 h-4 text-emerald-400 mr-2.5 flex-shrink-0" />
             <div className="flex flex-col">
-              <span className="text-xs font-medium text-emerald-400">RAMBOLL-GUEST</span>
-              <span className="text-[10px] text-emerald-500/70">Authorized</span>
+              <span className="text-[11px] font-bold text-emerald-400">RAMBOLL-GUEST</span>
+              <span className="text-[10px] text-emerald-500/60">Authorized Network</span>
             </div>
           </div>
         </div>
@@ -108,70 +166,114 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="h-16 flex-shrink-0 bg-neutral-900/80 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-4 sm:px-6 z-30 sticky top-0">
-          <div className="flex items-center flex-1">
+        <header className="h-14 flex-shrink-0 flex items-center justify-between px-4 sm:px-6 z-30 sticky top-0"
+          style={{ backgroundColor: 'rgba(6,9,19,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="flex items-center flex-1 gap-4">
             <button
               onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-2 -ml-2 mr-2 text-neutral-400 hover:text-white focus:outline-none"
+              className="lg:hidden p-2 -ml-2 text-slate-400 hover:text-white focus:outline-none rounded-lg hover:bg-white/10 transition-colors"
             >
               <Menu className="w-5 h-5" />
             </button>
             
-            {/* Search */}
-            <div className="hidden sm:flex max-w-md w-full relative group">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-neutral-500 group-focus-within:text-indigo-400 transition-colors" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search resources..."
-                className="block w-full pl-10 pr-3 py-2 border border-white/10 rounded-full leading-5 bg-black/20 text-neutral-300 placeholder-neutral-500 focus:outline-none focus:bg-black/40 focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 sm:text-sm transition-all"
-              />
+            {/* BK Ran Group Connect Heading */}
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-white tracking-tight hidden sm:block">BK Ran Group Connect</h2>
+              <span className="hidden md:inline-flex items-center text-[10px] font-mono font-bold px-2 py-0.5 rounded-md text-emerald-400" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                {versionInfo?.status || 'READY'}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center space-x-4 sm:space-x-6">
-            {/* Vercel Status Badge */}
-            <div className="hidden md:flex items-center px-3 py-1 rounded-full bg-black/40 border border-white/5 text-xs text-neutral-400 font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-              Build: {versionInfo?.commit || "85cd77b"} · {versionInfo?.status || "READY"}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Build Badge */}
+            <div className="hidden lg:flex items-center px-2.5 py-1 rounded-lg text-[10px] text-slate-500 font-mono" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              Build: {versionInfo?.commit?.slice(0,7) || '7303bf9'}
             </div>
 
-            {/* Notifications */}
-            <button className="relative p-2 text-neutral-400 hover:text-white focus:outline-none rounded-full hover:bg-white/5 transition-colors">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-neutral-900"></span>
-            </button>
+            {/* Notifications Bell */}
+            <div className="relative">
+              <button 
+                onClick={() => { setShowNotifications(!showNotifications); if (!showNotifications) markAllRead(); }}
+                className="relative p-2 text-slate-400 hover:text-white focus:outline-none rounded-xl hover:bg-white/[0.06] transition-colors"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold text-white px-1 shadow-lg shadow-indigo-500/40">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown */}
+              {showNotifications && (
+                <div className="absolute right-0 top-12 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in"
+                  style={{ backgroundColor: '#0d1424', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span className="text-xs font-bold text-white">Notifications</span>
+                    <span className="text-[10px] font-mono text-slate-500">{notifications.length} total</span>
+                  </div>
+                  <div className="overflow-y-auto max-h-72">
+                    {notifications.length > 0 ? notifications.map(n => (
+                      <div key={n.id} className="px-4 py-3 flex items-start gap-3 hover:bg-white/[0.03] transition-colors" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <div className="w-8 h-8 rounded-full bg-indigo-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <UserCheck className="w-4 h-4 text-indigo-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-slate-200 font-medium truncate">{n.message}</p>
+                          <p className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> {n.time}
+                          </p>
+                        </div>
+                        {!n.read && <span className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />}
+                      </div>
+                    )) : (
+                      <div className="px-4 py-8 text-center">
+                        <Bell className="w-8 h-8 text-slate-600 mx-auto mb-2" />
+                        <p className="text-xs text-slate-500">No notifications yet</p>
+                        <p className="text-[10px] text-slate-600 mt-1">User connections will appear here</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Divider */}
-            <div className="hidden sm:block h-6 w-px bg-white/10"></div>
+            <div className="hidden sm:block h-5 w-px bg-white/8"></div>
 
             {/* Profile & Logout */}
-            <div className="flex items-center space-x-4">
-              <div className="hidden sm:flex items-center">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-neutral-700 to-neutral-600 flex items-center justify-center text-sm font-medium text-white shadow-inner border border-white/10 mr-2">
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500/30 to-violet-500/30 flex items-center justify-center text-[11px] font-bold text-indigo-300 border border-indigo-500/20">
                   AD
                 </div>
-                <span className="text-sm font-medium text-neutral-300">Administrator</span>
+                <span className="text-xs font-semibold text-slate-300">Admin</span>
               </div>
               
               <Button
                 variant="ghost"
-                className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 flex items-center text-sm px-3 py-1.5"
+                className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 flex items-center text-xs px-3 py-1.5 rounded-xl"
                 onClick={async () => {
                   await fetch('/api/auth/logout', { method: 'POST' });
                   router.push('/');
                 }}
               >
-                <LogOut className="w-4 h-4 sm:mr-2" />
+                <LogOut className="w-4 h-4 sm:mr-1.5" />
                 <span className="hidden sm:inline">Sign Out</span>
               </Button>
             </div>
           </div>
         </header>
 
+        {/* Click outside to close notifications */}
+        {showNotifications && (
+          <div className="fixed inset-0 z-20" onClick={() => setShowNotifications(false)} />
+        )}
+
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto bg-black/20 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
