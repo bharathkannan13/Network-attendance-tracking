@@ -1,10 +1,10 @@
 "use client";
-
 import { useState, useEffect, use } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { ShieldCheck, Wifi, AlertTriangle, Link2Off, Sparkles, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Wifi, CheckCircle2, AlertTriangle, Link2Off, ShieldCheck } from 'lucide-react';
 
 type PortalState = 'LOADING' | 'USERNAME_FORM' | 'WELCOME' | 'ACCESS_DENIED' | 'INVALID';
 
@@ -22,44 +22,22 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
       localStorage.setItem('ramboll_device_uuid', uuid);
     }
     setDeviceUuid(uuid);
-
     const savedUser = localStorage.getItem('ramboll_employee_username');
-    if (savedUser) {
-      setUsername(savedUser);
-    }
-
+    if (savedUser) { setUsername(savedUser); }
     const validateCode = async () => {
       try {
         const netRes = await fetch('/api/network/check');
-        if (netRes.status === 403) {
-          setState('ACCESS_DENIED');
-          return;
-        }
-
+        if (netRes.status === 403) { setState('ACCESS_DENIED'); return; }
         const res = await fetch(`/api/sessions/validate?code=${code}`);
         if (res.ok) {
-          if (savedUser) {
-            sendHeartbeatPayload(savedUser, uuid);
-          } else {
-            setState('USERNAME_FORM');
-          }
+          if (savedUser) { sendHeartbeatPayload(savedUser, uuid); } else { setState('USERNAME_FORM'); }
         } else {
           if (code && code.length >= 4) {
-            if (savedUser) {
-              sendHeartbeatPayload(savedUser, uuid);
-            } else {
-              setState('USERNAME_FORM');
-            }
-          } else {
-            setState('INVALID');
-          }
+            if (savedUser) { sendHeartbeatPayload(savedUser, uuid); } else { setState('USERNAME_FORM'); }
+          } else { setState('INVALID'); }
         }
       } catch {
-        if (code && code.length >= 4) {
-          setState('USERNAME_FORM');
-        } else {
-          setState('INVALID');
-        }
+        if (code && code.length >= 4) { setState('USERNAME_FORM'); } else { setState('INVALID'); }
       }
     };
     validateCode();
@@ -68,146 +46,147 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
   const sendHeartbeatPayload = async (uname: string, uuidStr: string) => {
     try {
       const res = await fetch('/api/attendance/heartbeat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, username: uname, deviceUuid: uuidStr }),
       });
-      if (res.ok) {
-        setState('WELCOME');
-      } else {
-        setState('ACCESS_DENIED');
-      }
-    } catch {
-      setState('ACCESS_DENIED');
-    }
+      if (res.ok) { setState('WELCOME'); } else { setState('ACCESS_DENIED'); }
+    } catch { setState('ACCESS_DENIED'); }
   };
 
   useEffect(() => {
     if (state !== 'WELCOME' || !username) return;
-
-    const interval = setInterval(() => {
-      sendHeartbeatPayload(username, deviceUuid);
-    }, 30000); // 30 seconds
-
+    const interval = setInterval(() => { sendHeartbeatPayload(username, deviceUuid); }, 30000);
     return () => clearInterval(interval);
   }, [state, code, username, deviceUuid]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim()) return;
-    
     const trimmedUser = username.trim();
     localStorage.setItem('ramboll_employee_username', trimmedUser);
-    
     setIsSubmitting(true);
-    try {
-      await sendHeartbeatPayload(trimmedUser, deviceUuid);
-    } finally {
-      setIsSubmitting(false);
-    }
+    try { await sendHeartbeatPayload(trimmedUser, deviceUuid); } finally { setIsSubmitting(false); }
   };
 
   return (
-    <div className="aurora-bg min-h-screen flex items-center justify-center p-6 relative">
-      {state === 'LOADING' && (
-        <div className="text-center space-y-4 relative z-10">
-          <div className="w-12 h-12 border-4 border-[#5B7FFF] border-t-transparent rounded-full animate-spin mx-auto shadow-[0_0_20px_rgba(91,127,255,0.4)]"></div>
-          <p className="text-slate-400 text-sm font-medium tracking-wide">Connecting to BK Ran Group Network...</p>
-        </div>
-      )}
+    <div className="min-h-screen bg-[#060913] flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Aurora Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-[120px]" />
+      </div>
 
-      {state === 'USERNAME_FORM' && (
-        <div className="w-full max-w-md relative z-10">
-          <div className="glass-card rounded-[28px] p-8 space-y-6 shadow-[0_30px_70px_rgba(0,0,0,0.5)] border border-white/10">
-            <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#5B7FFF]/20 to-[#7B61FF]/20 border border-[#5B7FFF]/30 flex items-center justify-center mx-auto mb-4">
-                <Wifi className="w-7 h-7 text-[#5B7FFF]" />
-              </div>
-              <h1 className="text-2xl font-bold tracking-tight text-white">
-                BK Ran Group Network
-              </h1>
-              <p className="text-xs text-slate-400">Enter your credentials to activate attendance connectivity</p>
-            </div>
-            
-            <form onSubmit={handleSubmit} className="space-y-5 pt-2">
-              <Input
-                label="Employee Username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. bhat or Sha"
-                required
-                autoFocus
-                className="bg-black/30 border-white/10 focus:border-[#5B7FFF] text-white"
-              />
-              <Button type="submit" className="w-full bg-gradient-primary py-3 rounded-xl font-semibold shadow-[0_10px_30px_rgba(91,127,255,0.3)] transition-all hover:scale-[1.02]" isLoading={isSubmitting}>
-                Connect to Network
-              </Button>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {state === 'WELCOME' && (
-        <div className="w-full max-w-lg relative z-10">
-          <div className="glass-card rounded-[28px] p-10 text-center space-y-6 shadow-[0_30px_80px_rgba(0,0,0,0.6)] border border-emerald-500/20">
-            <div className="w-20 h-20 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto relative">
-              <div className="w-6 h-6 bg-emerald-500 rounded-full animate-pulse-green flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-black stroke-[3]" />
+      <div className="relative z-10 w-full flex justify-center">
+        {state === 'LOADING' && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-6">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Wifi className="w-6 h-6 text-indigo-400 animate-pulse" />
               </div>
             </div>
+            <p className="text-slate-400 text-sm font-medium tracking-wide">Connecting to BK Ran Group Network...</p>
+          </motion.div>
+        )}
 
-            <div className="space-y-1">
-              <h1 className="text-2xl font-bold text-white tracking-tight">Welcome to BK Ran Group Network</h1>
-              <h2 className="text-xl font-semibold text-[#5B7FFF]">Hello, {username}</h2>
-            </div>
+        {state === 'USERNAME_FORM' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+            <Card className="bg-slate-900/60 border border-slate-800/60 backdrop-blur-xl p-8 rounded-3xl shadow-2xl">
+              <div className="flex flex-col items-center text-center mb-8">
+                <div className="w-14 h-14 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-4 ring-1 ring-indigo-500/20">
+                  <Wifi className="w-7 h-7 text-indigo-400" />
+                </div>
+                <h1 className="text-2xl font-semibold text-white tracking-tight mb-2">BK Ran Group Network</h1>
+                <p className="text-sm text-slate-400">Enter credentials to activate attendance</p>
+              </div>
 
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold tracking-wide">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              Attendance Connectivity Active
-            </div>
-            
-            <div className="space-y-3 bg-white/[0.02] p-6 rounded-2xl border border-white/5 text-slate-300 text-sm">
-              <p className="flex items-center justify-center gap-2 font-medium text-white">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Connected Successfully
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Input 
+                    type="text" 
+                    placeholder="Employee Username" 
+                    value={username} 
+                    onChange={(e) => setUsername(e.target.value)} 
+                    disabled={isSubmitting}
+                    required
+                    className="bg-slate-950/50 border-slate-800 focus:border-indigo-500 text-slate-200 h-12 rounded-xl px-4"
+                  />
+                </div>
+                <Button 
+                  type="submit" 
+                  disabled={isSubmitting} 
+                  className="w-full h-12 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-medium shadow-lg shadow-indigo-500/20 transition-all border-0"
+                >
+                  {isSubmitting ? 'Connecting...' : 'Connect to Network'}
+                </Button>
+              </form>
+            </Card>
+          </motion.div>
+        )}
+
+        {state === 'WELCOME' && (
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-lg">
+            <Card className="bg-slate-900/60 border border-slate-800/60 backdrop-blur-xl p-8 rounded-3xl shadow-2xl text-center">
+              <div className="mx-auto w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mb-6 relative">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-full animate-ping" />
+                <CheckCircle2 className="w-8 h-8 text-emerald-500 relative z-10" />
+              </div>
+              <h1 className="text-2xl font-bold text-white mb-2">Welcome to BK Ran Group Network</h1>
+              <p className="text-slate-300 mb-6">Hello, {username}</p>
+              
+              <div className="bg-slate-950/50 rounded-2xl p-4 border border-slate-800/50 mb-6">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-emerald-400 font-medium text-sm">BK Ran Attendance Connectivity Active</span>
+                </div>
+                <p className="text-slate-400 text-sm">Status: Connected Successfully</p>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 text-xs text-slate-500 mb-6">
+                <ShieldCheck className="w-4 h-4" />
+                <span>Network: RAMBOLL-GUEST (guest.rambollgrp.com)</span>
+              </div>
+
+              <p className="text-sm text-slate-400">Please keep this page open while working.</p>
+            </Card>
+          </motion.div>
+        )}
+
+        {state === 'ACCESS_DENIED' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+            <Card className="bg-slate-900/60 border border-slate-800/60 backdrop-blur-xl p-8 rounded-3xl shadow-2xl text-center">
+              <div className="mx-auto w-16 h-16 bg-rose-500/10 rounded-full flex items-center justify-center mb-6 ring-1 ring-rose-500/20">
+                <AlertTriangle className="w-8 h-8 text-rose-500" />
+              </div>
+              <h1 className="text-2xl font-bold text-white mb-4">Invalid Network Connection</h1>
+              <p className="text-slate-400 text-sm mb-6">
+                You are trying to mark attendance from an unauthorized network.
               </p>
-              <p className="text-xs text-slate-400">Please keep this page open while working.</p>
-
-              <div className="pt-3 border-t border-white/5">
-                <span className="text-[11px] text-slate-400 block mb-1 font-mono uppercase tracking-wider">Network Security Key:</span>
-                <span className="text-xs font-mono font-bold text-[#38BDF8] bg-[#5B7FFF]/10 py-1.5 px-3 rounded-lg border border-[#5B7FFF]/20 inline-block">
-                  RAMBOLL-GUEST (guest.rambollgrp.com)
-                </span>
+              <div className="bg-slate-950/50 rounded-xl p-4 border border-rose-500/20 text-left">
+                <p className="text-xs text-rose-400 font-medium mb-1">Required Network:</p>
+                <p className="text-sm text-slate-300">RAMBOLL-GUEST (guest.rambollgrp.com)</p>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+            </Card>
+          </motion.div>
+        )}
 
-      {state === 'ACCESS_DENIED' && (
-        <div className="w-full max-w-md relative z-10">
-          <div className="glass-card rounded-[28px] p-8 text-center space-y-5 border border-red-500/30 shadow-[0_30px_70px_rgba(255,95,109,0.15)]">
-            <div className="w-14 h-14 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-center justify-center mx-auto text-red-400">
-              <AlertTriangle className="w-7 h-7" />
-            </div>
-            <h1 className="text-2xl font-bold text-red-400 tracking-tight">Invalid Network Connection</h1>
-            <p className="text-slate-300 text-sm">You are connected to an unauthorized network (Airtel, Jio, or External Carrier).</p>
-            <div className="bg-white/[0.03] p-4 rounded-xl border border-red-500/20 text-xs">
-              <p className="text-slate-400 mb-1">Required Authorized Corporate Network:</p>
-              <p className="font-mono text-[#38BDF8] font-bold text-sm">RAMBOLL-GUEST (guest.rambollgrp.com)</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {state === 'INVALID' && (
-        <div className="w-full max-w-md relative z-10">
-          <div className="glass-card rounded-[28px] p-8 text-center space-y-4 border border-white/10">
-            <Link2Off className="w-12 h-12 text-slate-500 mx-auto" />
-            <h1 className="text-xl font-bold text-white">Invalid Link</h1>
-            <p className="text-slate-400 text-sm">This attendance link is invalid or has expired.</p>
-          </div>
-        </div>
-      )}
+        {state === 'INVALID' && (
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="w-full max-w-md">
+            <Card className="bg-slate-900/60 border border-slate-800/60 backdrop-blur-xl p-8 rounded-3xl shadow-2xl text-center">
+              <div className="mx-auto w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mb-6">
+                <Link2Off className="w-8 h-8 text-slate-500" />
+              </div>
+              <h1 className="text-2xl font-bold text-white mb-2">Invalid Link</h1>
+              <p className="text-slate-400 text-sm">
+                This attendance link is invalid, malformed, or has expired.
+              </p>
+            </Card>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 }
