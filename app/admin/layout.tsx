@@ -1,21 +1,13 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { 
   ShieldCheck, 
-  LayoutDashboard, 
-  Users, 
-  Wifi, 
-  BarChart3, 
-  FileSpreadsheet, 
-  Download, 
-  Settings, 
   LogOut,
   Bell,
-  Search,
-  UserCheck
+  Search
 } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -38,16 +30,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     );
   }
-
-  const navItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, href: '/admin', active: true },
-    { label: 'Attendance', icon: UserCheck, href: '/admin' },
-    { label: 'Connected Users', icon: Users, href: '/admin' },
-    { label: 'Analytics', icon: BarChart3, href: '/admin' },
-    { label: 'Reports', icon: FileSpreadsheet, href: '/admin' },
-    { label: 'Export', icon: Download, href: '/admin' },
-    { label: 'Settings', icon: Settings, href: '/admin' },
-  ];
 
   return (
     <div className="min-h-screen cyber-3d-bg text-slate-100 flex flex-col font-sans">
@@ -87,7 +69,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             
             <div className="px-4 py-2 rounded-xl text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-2 shadow-sm">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Vercel Build: <strong>{versionInfo?.commit || '16b94ec'}</strong> ({versionInfo?.status || 'READY'})</span>
+              <span>Vercel Build: <strong>{versionInfo?.commit || '2af3272'}</strong> ({versionInfo?.status || 'READY'})</span>
             </div>
           </div>
 
@@ -120,44 +102,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      {/* Main Container with Sidebar + Dashboard Content */}
-      <div className="flex-1 max-w-[2200px] w-full mx-auto p-6 sm:p-8 lg:p-10 flex flex-col lg:flex-row gap-8">
-        
-        {/* Floating Glass Sidebar */}
-        <aside className="w-full lg:w-64 shrink-0">
-          <div className="glass-card-3d rounded-[24px] p-5 space-y-2 lg:sticky lg:top-28 shadow-2xl border border-white/10">
-            <p className="text-[11px] font-mono text-slate-400 uppercase tracking-wider px-3 py-2 font-bold">Navigation Menu</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-1 gap-1.5">
-              {navItems.map((item, idx) => {
-                const Icon = item.icon;
-                return (
-                  <button
-                    key={idx}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all ${
-                      idx === 0 
-                        ? 'btn-gradient-primary text-white shadow-[0_6px_20px_rgba(91,127,255,0.4)]' 
-                        : 'text-slate-400 hover:text-white hover:bg-white/10'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="pt-6 mt-4 border-t border-white/10 hidden lg:block">
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-[#5B7FFF]/15 to-[#7B61FF]/15 border border-[#5B7FFF]/30 text-center space-y-2 shadow-inner">
-                <Wifi className="w-6 h-6 text-[#5B7FFF] mx-auto animate-pulse" />
-                <p className="text-xs font-bold text-white">BK Ran Connect 3D</p>
-                <p className="text-[10px] text-emerald-400 font-mono font-semibold">Subnet Security Enforced</p>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content Area */}
-        <main className="flex-1 min-w-0 space-y-8">
+      {/* Main Content Area without Sidebar */}
+      <div className="flex-1 max-w-[2200px] w-full mx-auto p-6 sm:p-8 lg:p-10">
+        <main className="w-full space-y-8">
           {children}
         </main>
       </div>
