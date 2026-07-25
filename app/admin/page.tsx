@@ -58,7 +58,13 @@ export default function AdminDashboard() {
         const data = await res.json();
         const prodOrigin = typeof window !== 'undefined' && window.location.origin.includes('vercel.app')
           ? 'https://network-attendance-tracking.vercel.app' : window.location.origin;
-        setGeneratedLink(`${prodOrigin}/join/${data.code}`);
+        const link = `${prodOrigin}/join/${data.code}`;
+        setGeneratedLink(link);
+        
+        // Auto-copy to clipboard
+        navigator.clipboard.writeText(link);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
       }
     } catch (e) { console.error("Failed to generate link"); }
     finally { setIsGenerating(false); }

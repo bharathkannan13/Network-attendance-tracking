@@ -5,7 +5,7 @@ import "./globals.css";
 const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Ramboll Smart Attendance System",
+  title: "BKRAN Group Connect",
   description: "Enterprise Attendance Tracking System",
 };
 

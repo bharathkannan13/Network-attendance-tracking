@@ -174,15 +174,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <Menu className="w-5 h-5" />
             </button>
-            
-            {/* BK Ran Group Connect Heading */}
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-white tracking-tight hidden sm:block">BK Ran Group Connect</h2>
-              <span className="hidden md:inline-flex items-center text-[10px] font-mono font-bold px-2 py-0.5 rounded-md text-emerald-400" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-                {versionInfo?.status || 'READY'}
-              </span>
-            </div>
+          </div>
+          
+          {/* Centered BK Ran Group Connect Heading */}
+          <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
+            <h2 className="text-sm font-bold text-white tracking-tight">BKRAN Group Connect</h2>
+            <span className="hidden sm:inline-flex items-center text-[10px] font-mono font-bold px-2 py-0.5 rounded-md text-emerald-400" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+              {versionInfo?.status || 'READY'}
+            </span>
           </div>
 
           <div className="flex items-center gap-3 sm:gap-4">
