@@ -233,43 +233,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        {/* Horizontal Full-Width Notification Panel */}
+        {/* Centered Overlay Notification Modal */}
         {showNotifications && (
-          <div className="absolute left-0 lg:left-64 right-0 top-14 bg-[#0a0f1e]/95 backdrop-blur-2xl border-b border-indigo-500/20 z-40 shadow-[0_10px_40px_rgba(0,0,0,0.6)] py-6 px-6 sm:px-12 lg:px-16 animate-fade-in">
-            <div className="max-w-[1500px] mx-auto flex flex-col gap-4">
-              <div className="flex items-center justify-between">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/75 backdrop-blur-md" onClick={() => setShowNotifications(false)} />
+            
+            {/* Modal Dialog */}
+            <div className="bg-[#0b1021]/95 border border-white/10 w-full max-w-xl rounded-2xl overflow-hidden z-10 shadow-2xl flex flex-col max-h-[70vh] animate-fade-in">
+              <div className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-slate-900/40">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                  <span className="text-sm font-bold text-white">Live Network Connections</span>
+                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                  <h3 className="text-sm font-bold text-white">Live Network Connections</h3>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-xs font-mono text-slate-500">{notifications.length} connected today</span>
+                  <span className="text-xs font-mono text-slate-500">{notifications.length} connected</span>
                   <button onClick={() => setShowNotifications(false)} className="text-slate-400 hover:text-white p-1 hover:bg-white/10 rounded-lg transition-all">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
               </div>
-
-              {/* Horizontal Scroll Area */}
-              <div className="flex gap-4 overflow-x-auto pb-2 pt-1 custom-scrollbar">
-                {notifications.length > 0 ? notifications.map(n => (
-                  <div key={n.id} className="min-w-[280px] max-w-[320px] bg-slate-900/60 border border-white/5 hover:border-indigo-500/20 p-4 rounded-xl flex items-start gap-3 transition-all shrink-0">
-                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <UserCheck className="w-4 h-4 text-indigo-400" />
+              
+              <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
+                {notifications.length > 0 ? (
+                  notifications.map(n => (
+                    <div key={n.id} className="bg-white/[0.02] border border-white/5 hover:border-indigo-500/20 p-4 rounded-xl flex items-start gap-3 transition-all">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <UserCheck className="w-4 h-4 text-indigo-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-xs text-slate-200 font-semibold truncate">{n.username}</p>
+                          <p className="text-[10px] text-slate-500 flex items-center gap-1 shrink-0">
+                            <Clock className="w-3 h-3" /> {n.time}
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">{n.message}</p>
+                      </div>
+                      {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1 flex-shrink-0 animate-pulse" />}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-slate-200 font-semibold truncate">{n.username}</p>
-                      <p className="text-[11px] text-slate-400 mt-1">{n.message}</p>
-                      <p className="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {n.time}
-                      </p>
-                    </div>
-                    {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1 flex-shrink-0 animate-pulse" />}
-                  </div>
-                )) : (
-                  <div className="w-full text-center py-6 text-slate-500 flex flex-col items-center justify-center gap-2">
-                    <Bell className="w-8 h-8 text-slate-600" />
-                    <p className="text-xs">No active connections detected yet.</p>
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-slate-500 flex flex-col items-center justify-center gap-3">
+                    <Bell className="w-10 h-10 text-slate-600" />
+                    <p className="text-xs font-medium">No connection activity alerts yet.</p>
                   </div>
                 )}
               </div>

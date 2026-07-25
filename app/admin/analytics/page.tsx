@@ -136,8 +136,8 @@ export default function AnalyticsDashboard() {
               <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
               <circle cx="60" cy="60" r="50" fill="none" stroke="#10B981" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="25" strokeLinecap="round" transform="rotate(-90 60 60)" />
               <circle cx="60" cy="60" r="50" fill="none" stroke="#F59E0B" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="226" strokeLinecap="round" transform="rotate(234 60 60)" />
-              <text x="60" y="58" textAnchor="middle" className="fill-white text-xl font-bold" style={{fontSize: '20px', fontWeight: 800}}>90%</text>
-              <text x="60" y="73" textAnchor="middle" className="fill-slate-400 font-medium" style={{fontSize: '10px'}}>Present</text>
+              <text x="60" y="58" textAnchor="middle" fill="#ffffff" className="text-xl font-bold" style={{fontSize: '20px', fontWeight: 800, fill: '#ffffff'}}>90%</text>
+              <text x="60" y="73" textAnchor="middle" fill="#94a3b8" className="font-medium" style={{fontSize: '10px', fill: '#94a3b8'}}>Present</text>
             </svg>
           </div>
           <div className="space-y-2.5 max-w-[240px] mx-auto w-full border-t border-white/5 pt-4">
@@ -158,30 +158,47 @@ export default function AnalyticsDashboard() {
         </motion.div>
       </div>
 
-      {/* Charts Row 2: Weekly Hours + User Leaderboard */}
+      {/* Charts Row 2: Peak Connection Times + User Leaderboard */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        {/* Weekly Working Hours */}
+        {/* Peak Hours Analysis */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.35 }}
           className="glass-panel rounded-2xl p-6 space-y-4">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <Timer className="w-4 h-4 text-indigo-400" /> Weekly Working Hours
-          </h3>
-          <div className="space-y-4 max-w-[650px] mx-auto w-full">
-            {['Mon','Tue','Wed','Thu','Fri'].map((day, i) => {
-              const widths = [75, 85, 60, 90, 70];
-              return (
-                <div key={day} className="flex items-center gap-4">
-                  <span className="text-xs font-mono font-bold text-slate-400 w-8">{day}</span>
-                  <div className="flex-1 bg-white/5 h-7 rounded-lg overflow-hidden border border-white/5">
-                    <motion.div initial={{ width: 0 }} animate={{ width: `${widths[i]}%` }} transition={{ duration: 0.6, delay: 0.4 + i * 0.08 }}
-                      className="bg-gradient-to-r from-indigo-500 to-violet-600 h-full rounded-lg flex items-center justify-end pr-3">
-                      <span className="text-[11px] font-mono text-white font-bold">{(widths[i] / 10).toFixed(1)}h</span>
-                    </motion.div>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Timer className="w-4 h-4 text-indigo-400" /> Peak Hour Activity Analysis
+              </h3>
+              <p className="text-xs text-slate-400">Busiest connection periods throughout the day</p>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Live</span>
+          </div>
+          
+          <div className="h-48 w-full flex items-end pt-4 max-w-[650px] mx-auto">
+            <svg className="w-full h-full" viewBox="0 0 500 160" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="peakFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#10B981" stopOpacity="0" />
+                </linearGradient>
+              </defs>
+              {/* Baseline gridlines */}
+              <line x1="0" y1="40" x2="500" y2="40" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+              <line x1="0" y1="80" x2="500" y2="80" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+              <line x1="0" y1="120" x2="500" y2="120" stroke="rgba(255,255,255,0.03)" strokeWidth="1" />
+
+              {/* Area path */}
+              <path d="M 0,140 Q 80,120 150,40 T 300,90 T 420,30 L 500,60 L 500,160 L 0,160 Z" fill="url(#peakFill)" />
+              {/* Stroke path */}
+              <path d="M 0,140 Q 80,120 150,40 T 300,90 T 420,30 L 500,60" fill="none" stroke="#10B981" strokeWidth="2" strokeLinecap="round" />
+              
+              {/* Pulse dots for peaks */}
+              <circle cx="150" cy="40" r="4.5" fill="#10B981" className="animate-pulse" />
+              <circle cx="420" cy="30" r="4.5" fill="#10B981" className="animate-pulse" />
+            </svg>
+          </div>
+          <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 border-t border-white/5 pt-3 max-w-[650px] mx-auto">
+            <span>08:00</span><span>10:00</span><span className="text-emerald-400 font-bold">12:00 (Peak)</span><span>14:00</span><span>16:00</span><span className="text-emerald-400 font-bold">18:00 (Peak)</span><span>20:00</span>
           </div>
         </motion.div>
 
