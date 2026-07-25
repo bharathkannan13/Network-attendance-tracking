@@ -4,9 +4,9 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { motion } from 'framer-motion';
-import { Wifi, CheckCircle2, AlertTriangle, Link2Off, ShieldCheck } from 'lucide-react';
+import { Wifi, CheckCircle2, AlertTriangle, Link2Off, ShieldCheck, Laptop, Smartphone } from 'lucide-react';
 
-type PortalState = 'LOADING' | 'USERNAME_FORM' | 'WELCOME' | 'ACCESS_DENIED' | 'INVALID';
+type PortalState = 'LOADING' | 'USERNAME_FORM' | 'WELCOME' | 'ACCESS_DENIED' | 'INVALID' | 'MOBILE_RESTRICTED';
 
 export default function EmployeePortal({ params }: { params: Promise<{ code: string }> }) {
   const { code } = use(params);
@@ -16,6 +16,19 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Check if the user is visiting on a Mobile Phone or Tablet device
+    const isMobileOrTablet = () => {
+      const ua = navigator.userAgent;
+      const isMobileOS = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+      const isIPad = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
+      return isMobileOS || isIPad;
+    };
+
+    if (isMobileOrTablet()) {
+      setState('MOBILE_RESTRICTED');
+      return;
+    }
+
     let uuid = localStorage.getItem('ramboll_device_uuid');
     if (!uuid) {
       uuid = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'dev-' + Math.random().toString(36).substring(2, 11);
@@ -183,6 +196,26 @@ export default function EmployeePortal({ params }: { params: Promise<{ code: str
               <p className="text-slate-400 text-sm">
                 This attendance link is invalid, malformed, or has expired.
               </p>
+            </Card>
+          </motion.div>
+        )}
+
+        {state === 'MOBILE_RESTRICTED' && (
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
+            <Card className="bg-slate-900/60 border border-slate-800/60 backdrop-blur-xl p-8 rounded-3xl shadow-2xl text-center">
+              <div className="mx-auto w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mb-6 ring-1 ring-amber-500/20">
+                <Laptop className="w-8 h-8 text-amber-500" />
+              </div>
+              <h1 className="text-2xl font-bold text-white mb-4">Desktop Access Required</h1>
+              <p className="text-slate-300 text-sm mb-6 leading-relaxed">
+                This attendance link can only be accessed from a **laptop** or **desktop computer**.
+              </p>
+              <div className="bg-slate-950/50 rounded-xl p-4 border border-amber-500/10 text-left flex items-start gap-3">
+                <Smartphone className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                <p className="text-xs text-slate-400 leading-normal">
+                  Access is restricted on mobile devices and tablets. Please open this link on your main workstation or laptop.
+                </p>
+              </div>
             </Card>
           </motion.div>
         )}
