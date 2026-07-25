@@ -96,57 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
-    <div className="min-h-screen text-slate-100 flex overflow-hidden" style={{ backgroundColor: '#060913' }}>
-      {/* Centered Overlay Notification Modal */}
-      {showNotifications && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[99]" onClick={() => setShowNotifications(false)} />
-          
-          {/* Modal Dialog */}
-          <div className="bg-[#0b1021] border border-white/10 w-full max-w-xl rounded-2xl overflow-hidden z-[100] shadow-[0_0_50px_rgba(99,102,241,0.2)] flex flex-col max-h-[70vh] animate-fade-in">
-            <div className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-slate-900/40">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
-                <h3 className="text-sm font-bold text-white">Live Network Connections</h3>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs font-mono text-slate-500">{notifications.length} connected</span>
-                <button onClick={() => setShowNotifications(false)} className="text-slate-400 hover:text-white p-1 hover:bg-white/10 rounded-lg transition-all">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
-              {notifications.length > 0 ? (
-                notifications.map(n => (
-                  <div key={n.id} className="bg-white/[0.02] border border-white/5 hover:border-indigo-500/20 p-4 rounded-xl flex items-start gap-3 transition-all">
-                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <UserCheck className="w-4 h-4 text-indigo-400" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start gap-2">
-                        <p className="text-xs text-slate-200 font-semibold truncate">{n.username}</p>
-                        <p className="text-[10px] text-slate-500 flex items-center gap-1 shrink-0">
-                          <Clock className="w-3 h-3" /> {n.time}
-                        </p>
-                      </div>
-                      <p className="text-[11px] text-slate-400 mt-1">{n.message}</p>
-                    </div>
-                    {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1 flex-shrink-0 animate-pulse" />}
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-12 text-slate-500 flex flex-col items-center justify-center gap-3">
-                  <Bell className="w-10 h-10 text-slate-600" />
-                  <p className="text-xs font-medium">No connection activity alerts yet.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+    <div className="h-screen w-screen text-slate-100 flex overflow-hidden" style={{ backgroundColor: '#060913', height: '100vh', width: '100vw' }}>
 
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
@@ -284,9 +234,55 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
-        {/* Click outside to close notifications overlay helper */}
+        {/* Centered Overlay Notification Modal */}
         {showNotifications && (
-          <div className="fixed inset-0 z-20" onClick={() => setShowNotifications(false)} />
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div className="fixed inset-0 bg-black/85 backdrop-blur-xl z-[9998]" onClick={() => setShowNotifications(false)} />
+            
+            {/* Modal Dialog */}
+            <div className="bg-[#0b1021] border border-white/10 w-full max-w-lg rounded-2xl overflow-hidden z-[9999] shadow-[0_0_50px_rgba(99,102,241,0.25)] flex flex-col max-h-[70vh] animate-fade-in">
+              <div className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-slate-900/40">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
+                  <h3 className="text-sm font-bold text-white">Live Network Connections</h3>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono text-slate-500">{notifications.length} connected</span>
+                  <button onClick={() => setShowNotifications(false)} className="text-slate-400 hover:text-white p-1 hover:bg-white/10 rounded-lg transition-all">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
+                {notifications.length > 0 ? (
+                  notifications.map(n => (
+                    <div key={n.id} className="bg-white/[0.02] border border-white/5 hover:border-indigo-500/20 p-4 rounded-xl flex items-start gap-3 transition-all">
+                      <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <UserCheck className="w-4 h-4 text-indigo-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="text-xs text-slate-200 font-semibold truncate">{n.username}</p>
+                          <p className="text-[10px] text-slate-500 flex items-center gap-1 shrink-0">
+                            <Clock className="w-3 h-3" /> {n.time}
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">{n.message}</p>
+                      </div>
+                      {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1 flex-shrink-0 animate-pulse" />}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12 text-slate-500 flex flex-col items-center justify-center gap-3">
+                    <Bell className="w-10 h-10 text-slate-600" />
+                    <p className="text-xs font-medium">No connection activity alerts yet.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
 
         {/* Main Content with clean margins and container */}
