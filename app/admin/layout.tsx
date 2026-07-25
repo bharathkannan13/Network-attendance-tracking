@@ -99,12 +99,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="min-h-screen text-slate-100 flex overflow-hidden" style={{ backgroundColor: '#060913' }}>
       {/* Centered Overlay Notification Modal */}
       {showNotifications && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div className="fixed inset-0 bg-black/75 backdrop-blur-md" onClick={() => setShowNotifications(false)} />
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[99]" onClick={() => setShowNotifications(false)} />
           
           {/* Modal Dialog */}
-          <div className="bg-[#0b1021]/95 border border-white/10 w-full max-w-xl rounded-2xl overflow-hidden z-10 shadow-2xl flex flex-col max-h-[70vh] animate-fade-in">
+          <div className="bg-[#0b1021] border border-white/10 w-full max-w-xl rounded-2xl overflow-hidden z-[100] shadow-[0_0_50px_rgba(99,102,241,0.2)] flex flex-col max-h-[70vh] animate-fade-in">
             <div className="px-6 py-4 flex items-center justify-between border-b border-white/10 bg-slate-900/40">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse"></span>
@@ -216,8 +216,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="h-14 flex-shrink-0 flex items-center justify-between px-4 sm:px-6 z-30 sticky top-0"
-          style={{ backgroundColor: 'rgba(6,9,19,0.9)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'sticky', top: 0, zIndex: 40 }}>
+        <header className="h-14 flex-shrink-0 flex items-center justify-between px-4 sm:px-6 z-40 sticky top-0"
+          style={{ backgroundColor: '#060913', borderBottom: '1px solid rgba(255,255,255,0.06)', position: 'sticky', top: 0, zIndex: 40 }}>
           <div className="flex items-center flex-1 gap-4">
             <button
               onClick={() => setIsSidebarOpen(true)}
