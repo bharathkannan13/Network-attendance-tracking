@@ -93,7 +93,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Analytics', href: '/admin/analytics', icon: BarChart3 },
-    { name: 'Export', href: '/admin/export', icon: Download },
   ];
 
   return (
@@ -205,39 +204,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   </span>
                 )}
               </button>
-
-              {/* Notification Dropdown */}
-              {showNotifications && (
-                <div className="absolute right-0 top-12 w-80 max-h-96 rounded-2xl shadow-2xl overflow-hidden z-50 animate-fade-in"
-                  style={{ backgroundColor: '#0d1424', border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <span className="text-xs font-bold text-white">Notifications</span>
-                    <span className="text-[10px] font-mono text-slate-500">{notifications.length} total</span>
-                  </div>
-                  <div className="overflow-y-auto max-h-72">
-                    {notifications.length > 0 ? notifications.map(n => (
-                      <div key={n.id} className="px-4 py-3 flex items-start gap-3 hover:bg-white/[0.03] transition-colors" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                        <div className="w-8 h-8 rounded-full bg-indigo-500/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <UserCheck className="w-4 h-4 text-indigo-400" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-slate-200 font-medium truncate">{n.message}</p>
-                          <p className="text-[10px] text-slate-500 mt-0.5 flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> {n.time}
-                          </p>
-                        </div>
-                        {!n.read && <span className="w-2 h-2 rounded-full bg-indigo-500 mt-2 flex-shrink-0" />}
-                      </div>
-                    )) : (
-                      <div className="px-4 py-8 text-center">
-                        <Bell className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                        <p className="text-xs text-slate-500">No notifications yet</p>
-                        <p className="text-[10px] text-slate-600 mt-1">User connections will appear here</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Divider */}
@@ -267,14 +233,58 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </header>
 
+        {/* Horizontal Full-Width Notification Panel */}
+        {showNotifications && (
+          <div className="absolute left-0 lg:left-64 right-0 top-14 bg-[#0a0f1e]/95 backdrop-blur-2xl border-b border-indigo-500/20 z-40 shadow-[0_10px_40px_rgba(0,0,0,0.6)] py-6 px-6 sm:px-12 lg:px-16 animate-fade-in">
+            <div className="max-w-[1500px] mx-auto flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                  <span className="text-sm font-bold text-white">Live Network Connections</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono text-slate-500">{notifications.length} connected today</span>
+                  <button onClick={() => setShowNotifications(false)} className="text-slate-400 hover:text-white p-1 hover:bg-white/10 rounded-lg transition-all">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Horizontal Scroll Area */}
+              <div className="flex gap-4 overflow-x-auto pb-2 pt-1 custom-scrollbar">
+                {notifications.length > 0 ? notifications.map(n => (
+                  <div key={n.id} className="min-w-[280px] max-w-[320px] bg-slate-900/60 border border-white/5 hover:border-indigo-500/20 p-4 rounded-xl flex items-start gap-3 transition-all shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-indigo-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <UserCheck className="w-4 h-4 text-indigo-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-slate-200 font-semibold truncate">{n.username}</p>
+                      <p className="text-[11px] text-slate-400 mt-1">{n.message}</p>
+                      <p className="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {n.time}
+                      </p>
+                    </div>
+                    {!n.read && <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1 flex-shrink-0 animate-pulse" />}
+                  </div>
+                )) : (
+                  <div className="w-full text-center py-6 text-slate-500 flex flex-col items-center justify-center gap-2">
+                    <Bell className="w-8 h-8 text-slate-600" />
+                    <p className="text-xs">No active connections detected yet.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Click outside to close notifications */}
         {showNotifications && (
           <div className="fixed inset-0 z-20" onClick={() => setShowNotifications(false)} />
         )}
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto">
+        {/* Main Content with clean margins and container */}
+        <main className="flex-1 overflow-y-auto p-6 sm:p-10 lg:p-12 xl:p-16">
+          <div className="max-w-[1500px] mx-auto space-y-8">
             {children}
           </div>
         </main>

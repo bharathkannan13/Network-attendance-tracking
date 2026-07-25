@@ -124,28 +124,34 @@ export default function AnalyticsDashboard() {
 
         {/* Attendance Distribution */}
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}
-          className="glass-panel rounded-2xl p-6 space-y-5">
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
-            <PieChart className="w-4 h-4 text-indigo-400" /> Attendance Distribution
-          </h3>
-          <div className="flex items-center justify-center py-4">
-            <svg width="120" height="120" viewBox="0 0 120 120">
+          className="glass-panel rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-2">
+              <PieChart className="w-4 h-4 text-indigo-400" /> Attendance Distribution
+            </h3>
+            <p className="text-xs text-slate-400">Proportional user presence overview</p>
+          </div>
+          <div className="flex items-center justify-center py-6">
+            <svg width="130" height="130" viewBox="0 0 120 120" className="drop-shadow-[0_0_15px_rgba(99,102,241,0.15)]">
               <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
               <circle cx="60" cy="60" r="50" fill="none" stroke="#10B981" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="25" strokeLinecap="round" transform="rotate(-90 60 60)" />
               <circle cx="60" cy="60" r="50" fill="none" stroke="#F59E0B" strokeWidth="12" strokeDasharray="251.2" strokeDashoffset="226" strokeLinecap="round" transform="rotate(234 60 60)" />
-              <text x="60" y="58" textAnchor="middle" className="fill-white text-lg font-bold" style={{fontSize: '18px', fontWeight: 700}}>90%</text>
-              <text x="60" y="73" textAnchor="middle" className="fill-slate-400" style={{fontSize: '9px'}}>Present</text>
+              <text x="60" y="58" textAnchor="middle" className="fill-white text-xl font-bold" style={{fontSize: '20px', fontWeight: 800}}>90%</text>
+              <text x="60" y="73" textAnchor="middle" className="fill-slate-400 font-medium" style={{fontSize: '10px'}}>Present</text>
             </svg>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2.5 max-w-[240px] mx-auto w-full border-t border-white/5 pt-4">
             {[
-              { label: 'Present', pct: '90%', color: 'bg-emerald-500' },
-              { label: 'Late', pct: '7%', color: 'bg-amber-500' },
-              { label: 'Absent', pct: '3%', color: 'bg-slate-500' },
+              { label: 'Present', pct: '90%', color: 'bg-emerald-500', text: 'text-emerald-400' },
+              { label: 'Late', pct: '7%', color: 'bg-amber-500', text: 'text-amber-400' },
+              { label: 'Absent', pct: '3%', color: 'bg-slate-400', text: 'text-slate-400' },
             ].map(item => (
-              <div key={item.label} className="flex items-center justify-between text-xs text-slate-300">
-                <span className="flex items-center gap-2"><span className={`w-2 h-2 rounded-full ${item.color}`}></span>{item.label}</span>
-                <span className="font-mono font-semibold">{item.pct}</span>
+              <div key={item.label} className="flex items-center justify-between text-xs font-semibold">
+                <span className="flex items-center gap-2.5 text-slate-300">
+                  <span className={`w-2.5 h-2.5 rounded-full ${item.color}`}></span>
+                  {item.label}
+                </span>
+                <span className={`font-mono ${item.text}`}>{item.pct}</span>
               </div>
             ))}
           </div>
@@ -161,16 +167,16 @@ export default function AnalyticsDashboard() {
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <Timer className="w-4 h-4 text-indigo-400" /> Weekly Working Hours
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-4 max-w-[650px] mx-auto w-full">
             {['Mon','Tue','Wed','Thu','Fri'].map((day, i) => {
               const widths = [75, 85, 60, 90, 70];
               return (
-                <div key={day} className="flex items-center gap-3">
-                  <span className="text-xs font-mono text-slate-400 w-8">{day}</span>
-                  <div className="flex-1 bg-white/5 h-6 rounded-lg overflow-hidden">
+                <div key={day} className="flex items-center gap-4">
+                  <span className="text-xs font-mono font-bold text-slate-400 w-8">{day}</span>
+                  <div className="flex-1 bg-white/5 h-7 rounded-lg overflow-hidden border border-white/5">
                     <motion.div initial={{ width: 0 }} animate={{ width: `${widths[i]}%` }} transition={{ duration: 0.6, delay: 0.4 + i * 0.08 }}
-                      className="bg-gradient-to-r from-indigo-500/60 to-violet-500/60 h-full rounded-lg flex items-center justify-end pr-2">
-                      <span className="text-[10px] font-mono text-white font-semibold">{(widths[i] / 10).toFixed(1)}h</span>
+                      className="bg-gradient-to-r from-indigo-500 to-violet-600 h-full rounded-lg flex items-center justify-end pr-3">
+                      <span className="text-[11px] font-mono text-white font-bold">{(widths[i] / 10).toFixed(1)}h</span>
                     </motion.div>
                   </div>
                 </div>
@@ -185,21 +191,21 @@ export default function AnalyticsDashboard() {
           <h3 className="text-sm font-bold text-white flex items-center gap-2">
             <Users className="w-4 h-4 text-indigo-400" /> Top Connected Users
           </h3>
-          {leaderboard.length > 0 ? (
-            <div className="space-y-2">
-              {leaderboard.map((user, i) => (
-                <div key={user.name} className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] transition-colors">
+          <div className="max-w-[650px] mx-auto w-full space-y-2.5">
+            {leaderboard.length > 0 ? (
+              leaderboard.map((user, i) => (
+                <div key={user.name} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-all">
                   <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-[10px] font-bold ${
-                    i === 0 ? 'bg-amber-500/20 text-amber-400' : i === 1 ? 'bg-slate-400/20 text-slate-300' : i === 2 ? 'bg-orange-500/20 text-orange-400' : 'bg-white/5 text-slate-400'
+                    i === 0 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : i === 1 ? 'bg-slate-400/20 text-slate-300 border border-slate-400/30' : i === 2 ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' : 'bg-white/5 text-slate-400 border border-white/5'
                   }`}>{i + 1}</span>
-                  <span className="text-xs font-semibold text-white flex-1">{user.name}</span>
-                  <span className="text-xs font-mono text-indigo-400 font-semibold">{user.hours} hrs</span>
+                  <span className="text-xs font-bold text-slate-200 flex-1">{user.name}</span>
+                  <span className="text-xs font-mono text-indigo-400 font-bold">{user.hours} hrs</span>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-slate-500 text-center py-8">No user data available yet.</p>
-          )}
+              ))
+            ) : (
+              <p className="text-xs text-slate-500 text-center py-8">No user data available yet.</p>
+            )}
+          </div>
         </motion.div>
       </div>
 
